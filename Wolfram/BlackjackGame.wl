@@ -32,6 +32,8 @@ Begin["`BlackjackGamePrivate`"];
 
 $felt       = RGBColor["#1a472a"];
 $feltMid    = RGBColor["#2d5a3f"];
+$panelBg    = RGBColor["#0d2818"]; (* darker than felt for inner containers *)
+$badgeBg    = RGBColor["#16391f"]; (* slightly lifted for small badges    *)
 $gold       = RGBColor["#ffd700"];
 $cardBack1  = RGBColor["#1a3a8a"];
 $cardBack2  = RGBColor["#2a4a9a"];
@@ -43,22 +45,104 @@ $infoColor  = RGBColor["#e0e0e0"];
 
 (* --- card graphics ------------------------------------------------------- *)
 
+(* Pip positions in normalized card coordinates {0..1, 0..1.5} for the
+   non-corner face region. Layouts follow the standard playing-card
+   conventions (Bicycle / casino decks).                                *)
+$pipPositions = <|
+    "2"  -> {{0.5, 1.15}, {0.5, 0.35}},
+    "3"  -> {{0.5, 1.15}, {0.5, 0.75}, {0.5, 0.35}},
+    "4"  -> {{0.3, 1.10}, {0.7, 1.10}, {0.3, 0.40}, {0.7, 0.40}},
+    "5"  -> {{0.3, 1.10}, {0.7, 1.10}, {0.5, 0.75}, {0.3, 0.40}, {0.7, 0.40}},
+    "6"  -> {{0.3, 1.15}, {0.7, 1.15}, {0.3, 0.75}, {0.7, 0.75},
+             {0.3, 0.35}, {0.7, 0.35}},
+    "7"  -> {{0.3, 1.15}, {0.7, 1.15}, {0.5, 0.95},
+             {0.3, 0.75}, {0.7, 0.75}, {0.3, 0.35}, {0.7, 0.35}},
+    "8"  -> {{0.3, 1.18}, {0.7, 1.18}, {0.5, 0.98},
+             {0.3, 0.75}, {0.7, 0.75}, {0.5, 0.53},
+             {0.3, 0.32}, {0.7, 0.32}},
+    "9"  -> {{0.3, 1.18}, {0.7, 1.18}, {0.3, 0.95}, {0.7, 0.95},
+             {0.5, 0.75},
+             {0.3, 0.55}, {0.7, 0.55}, {0.3, 0.32}, {0.7, 0.32}},
+    "10" -> {{0.3, 1.20}, {0.7, 1.20}, {0.5, 1.02},
+             {0.3, 0.88}, {0.7, 0.88}, {0.3, 0.62}, {0.7, 0.62},
+             {0.5, 0.48}, {0.3, 0.30}, {0.7, 0.30}}
+|>;
+
+(* Size constants tuned for ImageSize -> {65, 98}.                      *)
+$cornerRankSize = 11;
+$cornerSuitSize = 10;
+$pipFontSize    = 12;
+$aceFontSize    = 34;
+$faceRankSize   = 28;
+$faceSuitSize   = 15;
+
+cardFaceLayout[rank_String, suit_String, col_] :=
+    Which[
+        rank === "A",
+            {col,
+             Text[Style[suit,
+                        FontSize   -> $aceFontSize,
+                        FontWeight -> Bold],
+                  {0.5, 0.75}]},
+        MemberQ[{"J", "Q", "K"}, rank],
+            {(* soft suit tinge behind the letter *)
+             Lighter[col, 0.7],
+             Rectangle[{0.2, 0.28}, {0.8, 1.22}, RoundingRadius -> 0.05],
+             col,
+             (* big ornate letter *)
+             Text[Style[rank,
+                        FontWeight -> Bold,
+                        FontSize   -> $faceRankSize,
+                        FontFamily -> "Times"],
+                  {0.5, 0.82}],
+             (* small suit below *)
+             Text[Style[suit,
+                        FontWeight -> Bold,
+                        FontSize   -> $faceSuitSize],
+                  {0.5, 0.50}]},
+        True,
+            {col,
+             Sequence @@ (
+                 Text[Style[suit,
+                            FontWeight -> Bold,
+                            FontSize   -> $pipFontSize], #] & /@
+                 $pipPositions[rank]
+             )}
+    ];
+
 cardGraphic[card_Association] :=
-    Module[{col = If[IsRedSuit[card], $redSuit, Black]},
+    Module[{rank, suit, col},
+        rank = card["value"];
+        suit = card["suit"];
+        col  = If[IsRedSuit[card], $redSuit, Black];
         Graphics[
             {
-                EdgeForm[Directive[GrayLevel[0.6], Thickness[0.01]]],
+                (* card paper *)
+                EdgeForm[Directive[GrayLevel[0.35], Thickness[0.005]]],
                 FaceForm[White],
-                Rectangle[{0, 0}, {1, 1.5}, RoundingRadius -> 0.1],
+                Rectangle[{0, 0}, {1, 1.5}, RoundingRadius -> 0.08],
+
+                (* top-left rank + suit *)
                 col,
-                Text[Style[card["value"] <> card["suit"], Bold, 12], {0.18, 1.35}],
-                Text[Style[card["suit"],                 Bold, 28], {0.5,  0.75}],
-                Rotate[
-                    Text[Style[card["value"] <> card["suit"], Bold, 12], {0.82, 0.15}],
-                    Pi, {0.82, 0.15}
-                ]
+                Text[Style[rank,
+                           FontWeight -> Bold,
+                           FontSize   -> $cornerRankSize], {0.14, 1.40}],
+                Text[Style[suit,
+                           FontSize   -> $cornerSuitSize], {0.14, 1.25}],
+
+                (* bottom-right rank + suit (rotated 180) *)
+                Rotate[Text[Style[rank,
+                                  FontWeight -> Bold,
+                                  FontSize   -> $cornerRankSize], {0.86, 0.10}],
+                       Pi, {0.86, 0.10}],
+                Rotate[Text[Style[suit,
+                                  FontSize   -> $cornerSuitSize], {0.86, 0.25}],
+                       Pi, {0.86, 0.25}],
+
+                (* face *)
+                cardFaceLayout[rank, suit, col]
             },
-            ImageSize   -> {60, 90},
+            ImageSize   -> {65, 98},
             PlotRange   -> {{0, 1}, {0, 1.5}},
             AspectRatio -> 1.5
         ]
@@ -67,13 +151,25 @@ cardGraphic[card_Association] :=
 hiddenCardGraphic[] :=
     Graphics[
         {
-            EdgeForm[Directive[GrayLevel[0.6], Thickness[0.01]]],
+            EdgeForm[Directive[GrayLevel[0.35], Thickness[0.005]]],
             FaceForm[LinearGradientFilling[{$cardBack1, $cardBack2, $cardBack1}]],
-            Rectangle[{0, 0}, {1, 1.5}, RoundingRadius -> 0.1],
-            GrayLevel[1, 0.3],
-            Text[Style["?", Bold, 36], {0.5, 0.75}]
+            Rectangle[{0, 0}, {1, 1.5}, RoundingRadius -> 0.08],
+
+            (* crosshatch pattern *)
+            Opacity[0.18], White, Thickness[0.006],
+            Table[Line[{{-0.1,  0.1 + 0.13 i}, {1.1, -0.5 + 0.13 i}}], {i, 0, 14}],
+            Table[Line[{{-0.1, -0.5 + 0.13 i}, {1.1,  0.1 + 0.13 i}}], {i, 0, 14}],
+            Opacity[1],
+
+            (* central medallion *)
+            GrayLevel[1, 0.35],
+            Disk[{0.5, 0.75}, {0.22, 0.22}],
+            GrayLevel[1, 0.8],
+            Text[Style["\[SpadeSuit]\[HeartSuit]",
+                       FontSize -> 16, FontWeight -> Bold],
+                 {0.5, 0.75}]
         },
-        ImageSize   -> {60, 90},
+        ImageSize   -> {65, 98},
         PlotRange   -> {{0, 1}, {0, 1.5}},
         AspectRatio -> 1.5
     ];
@@ -123,9 +219,9 @@ statBadge[label_, value_] :=
             Style[label <> ": ", White, 13],
             Style[ToString[value], Bold, 13, $gold]
         }],
-        Background     -> GrayLevel[1, 0.1],
+        Background     -> $badgeBg,
         RoundingRadius -> 8,
-        FrameStyle     -> None,
+        FrameStyle     -> Directive[$feltMid, Thickness[0.8]],
         FrameMargins   -> {{10, 10}, {6, 6}}
     ];
 
@@ -136,9 +232,9 @@ infoBadge[label_, value_, color_:Automatic] :=
             Style[value, Bold, 16,
                 If[color === Automatic, $gold, color]]
         }, Alignment -> Center, Spacings -> 0.3],
-        Background     -> GrayLevel[1, 0.1],
+        Background     -> $badgeBg,
         RoundingRadius -> 8,
-        FrameStyle     -> None,
+        FrameStyle     -> Directive[$feltMid, Thickness[0.8]],
         FrameMargins   -> {{12, 12}, {6, 6}},
         ImageSize      -> {120, 60}
     ];
@@ -397,7 +493,7 @@ BlackjackGame[] :=
                             },
                             Alignment -> {{Right, Left}},
                             Spacings  -> {2, 0.8}],
-                            Background     -> GrayLevel[0, 0.2],
+                            Background     -> $panelBg,
                             FrameStyle     -> None,
                             RoundingRadius -> 10,
                             FrameMargins   -> 10
@@ -419,7 +515,7 @@ BlackjackGame[] :=
                         Dynamic @ cardRow[dealerHand,
                             If[revealDealer || gameOver, {}, {2}]
                         ],
-                        Background     -> GrayLevel[0, 0.2],
+                        Background     -> $panelBg,
                         FrameStyle     -> None,
                         RoundingRadius -> 10,
                         FrameMargins   -> 10,
@@ -432,7 +528,7 @@ BlackjackGame[] :=
                     Dynamic @ labelBadge["Your Hand", HandScore[playerHand]],
                     Framed[
                         Dynamic @ cardRow[playerHand],
-                        Background     -> GrayLevel[0, 0.2],
+                        Background     -> $panelBg,
                         FrameStyle     -> None,
                         RoundingRadius -> 10,
                         FrameMargins   -> 10,
@@ -440,20 +536,6 @@ BlackjackGame[] :=
                     ],
 
                     Spacer[{0, 8}],
-
-                    (* --- Basic-strategy inline hint --------------------- *)
-                    Dynamic[
-                        If[!gameOver && Length[playerHand] >= 2 && Length[dealerHand] >= 1,
-                            Row[{
-                                Style["Basic strategy: ", $infoColor, 12],
-                                Style[
-                                    actionLong @ BasicStrategy[playerHand, dealerHand[[1]]],
-                                    Bold, 13, $gold
-                                ]
-                            }],
-                            Spacer[{0, 18}]
-                        ]
-                    ],
 
                     (* --- Result message --------------------------------- *)
                     Dynamic @ Pane[
@@ -565,7 +647,7 @@ BlackjackGame[] :=
                                     Italic, $infoColor, 10
                                 ]
                             }, Alignment -> Center],
-                            Background     -> GrayLevel[0, 0.2],
+                            Background     -> $panelBg,
                             FrameStyle     -> None,
                             RoundingRadius -> 10,
                             FrameMargins   -> 10
@@ -600,7 +682,7 @@ BlackjackGame[] :=
                                     ] <> " %"
                                 ]
                             }],
-                            Background     -> GrayLevel[0, 0.2],
+                            Background     -> $panelBg,
                             FrameStyle     -> None,
                             RoundingRadius -> 10,
                             FrameMargins   -> 10
@@ -622,7 +704,7 @@ BlackjackGame[] :=
                                     $infoColor, 12
                                 ]
                             }, Alignment -> Center],
-                            Background     -> GrayLevel[0, 0.2],
+                            Background     -> $panelBg,
                             FrameStyle     -> None,
                             RoundingRadius -> 10,
                             FrameMargins   -> 10

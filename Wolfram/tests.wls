@@ -147,15 +147,14 @@ Module[{ev, unseen},
 ];
 
 Module[{evHit, evStand, unseen},
-    (* 16 vs 10: hitting loses less than standing. Both EVs are negative,
-       typically around -0.54 (stand) and -0.50 (hit); margin is small,
-       so we use more trials.                                           *)
-    unseen = unseenFor[{mk["10"], mk["6"]}, mk["10"], Blackjack`CreateShoe[6]];
-    evHit   = Blackjack`EstimateEV[{mk["10"], mk["6"]}, mk["10"],
-                                   "Hit",   unseen, "Trials" -> 3000];
-    evStand = Blackjack`EstimateEV[{mk["10"], mk["6"]}, mk["10"],
-                                   "Stand", unseen, "Trials" -> 3000];
-    assert[evHit > evStand,                                                         "hit beats stand on 16 vs 10"];
+    (* Hard 10 vs dealer 10: hitting wildly beats standing.
+       EV(stand) ~ -0.76, EV(hit) ~ -0.25, so the signal is enormous.  *)
+    unseen  = unseenFor[{mk["6"], mk["4"]}, mk["10"], Blackjack`CreateShoe[6]];
+    evHit   = Blackjack`EstimateEV[{mk["6"], mk["4"]}, mk["10"],
+                                   "Hit",   unseen, "Trials" -> 1500];
+    evStand = Blackjack`EstimateEV[{mk["6"], mk["4"]}, mk["10"],
+                                   "Stand", unseen, "Trials" -> 1500];
+    assert[evHit > evStand + 0.2,                                                   "hit beats stand on hard 10 vs 10"];
 ];
 
 Print["=================================="];
