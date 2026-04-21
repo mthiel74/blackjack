@@ -127,6 +127,15 @@ assert[Blackjack`BasicStrategy[{mk["A"], mk["8"]},  mk["10"]] === "S",          
 assert[Blackjack`BasicStrategy[{mk["A"], mk["6"]},  mk["5"]]  === "H",             "soft 17 vs 5: hit"];
 assert[Blackjack`BasicStrategy[{mk["5"], mk["5"]},  mk["10"]] === "H",             "10 vs 10: hit"];
 
+(* ===== Payout ============================================================ *)
+Print["--- payout ---"];
+assert[Blackjack`Payout["win",  10]        ===  10.,                               "regular win pays 1:1"];
+assert[Blackjack`Payout["win",  10, True]  ===  15.,                               "natural blackjack pays 3:2"];
+assert[Blackjack`Payout["lose", 10]        === -10.,                               "loss returns -bet"];
+assert[Blackjack`Payout["push", 10]        ===   0.,                               "push returns 0"];
+assert[Blackjack`Payout["push", 10, True]  ===   0.,                               "push with BJ flag still 0"];
+assert[Blackjack`Payout["win",  0]         ===   0.,                               "zero-bet win pays 0"];
+
 (* ===== EV sanity checks ================================================== *)
 Print["--- EV sanity (stochastic, thresholds chosen with margin) ---"];
 

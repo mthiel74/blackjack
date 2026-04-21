@@ -258,8 +258,13 @@ BlackjackGame[] :=
             gameOver = False, message = "", result = "",
             revealDealer = False,
 
-            (* session stats *)
+            (* session stats (history stores signed dollar changes) *)
             wins = 0, losses = 0, pushes = 0, history = {},
+
+            (* bankroll & bet *)
+            startingBank = 1000., bankroll = 1000., currentBet = 10.,
+            roundBet = 10., lastPayout = 0.,
+            minBet = 5., maxBet = 500.,
 
             (* configuration *)
             nDecks = 1, hitSoft17 = False, penetration = 0.75,
@@ -274,10 +279,11 @@ BlackjackGame[] :=
             (* helper function symbols -- declared here so their DownValues
                share the DynamicModule's persistent dynamic context and
                survive across FE button clicks. *)
-            finish, startRound, doHit, doStand, doReset,
+            finish, startRound, doHit, doStand, doReset, doRebuy,
             reshuffleIfNeeded, absorbRound, unseenCards,
             displayCount, recomputeEV, sessionPlot,
-            onDecksChange, onSoft17Change
+            onDecksChange, onSoft17Change, addChip, clearBet, maxOutBet,
+            chipButton
         },
 
         (* --- reshuffle logic ---------------------------------------------- *)
@@ -308,24 +314,44 @@ BlackjackGame[] :=
 
         (* --- round flow --------------------------------------------------- *)
 
-        finish[res_String, msg_String] := (
+        finish[res_String, msg_String] := Module[{isBJ, payout, richMsg},
             gameOver     = True;
             revealDealer = True;
             result       = res;
-            message      = msg;
+
+            (* 3:2 payout only on a natural (two-card) player blackjack *)
+            isBJ   = (res === "win" && IsBlackjack[playerHand]);
+            payout = Payout[res, roundBet, isBJ];
+            bankroll   += payout;
+            lastPayout  = payout;
+
+            richMsg = msg <> "   (" <>
+                      Which[payout > 0, "+$", payout < 0, "-$", True, "$"] <>
+                      ToString[NumberForm[Abs[payout], {Infinity, 2}]] <> ")";
+            message = richMsg;
+
             Switch[res,
                 "win",  wins++,
                 "lose", losses++,
                 "push", pushes++
             ];
-            AppendTo[history,
-                Switch[res, "win", 1, "lose", -1, "push", 0]];
+            AppendTo[history, payout];
             evStale = True;
-        );
+        ];
 
-        startRound[] := Module[{p, dh, d, pScore, dScore},
+        startRound[] := Module[{p, dh, d, pScore, dScore, effBet},
             If[Length[playerHand] > 0 || Length[dealerHand] > 0, absorbRound[]];
             reshuffleIfNeeded[];
+
+            (* Lock in the bet for this round. Bet is clamped to available
+               bankroll in case the player went negative on the last round. *)
+            effBet = Clip[currentBet, {Min[minBet, bankroll], Max[bankroll, minBet]}];
+            If[effBet > bankroll, effBet = bankroll];
+            If[effBet < minBet,   effBet = Min[minBet, bankroll]];
+            currentBet = effBet;
+            roundBet   = effBet;
+            lastPayout = 0.;
+
             gameOver     = False;
             revealDealer = False;
             result       = "";
@@ -376,8 +402,42 @@ BlackjackGame[] :=
 
         doReset[] := (
             wins = 0; losses = 0; pushes = 0;
-            history = {};
+            history    = {};
+            bankroll   = startingBank;
+            currentBet = minBet * 2;
+            lastPayout = 0.;
         );
+
+        doRebuy[] := (
+            bankroll  += startingBank;
+            currentBet = Min[currentBet, bankroll];
+        );
+
+        (* --- bet controls ------------------------------------------------- *)
+
+        addChip[v_] := (
+            currentBet = Clip[currentBet + v,
+                              {minBet, Min[bankroll, maxBet]}];
+        );
+
+        clearBet[] := (
+            currentBet = Min[minBet, bankroll];
+        );
+
+        maxOutBet[] := (
+            currentBet = Min[bankroll, maxBet];
+        );
+
+        chipButton[label_, value_, bgColor_, fg_:White] :=
+            Button[
+                Style[label, Bold, 13, fg],
+                addChip[value],
+                Enabled    -> Dynamic[gameOver && currentBet < Min[bankroll, maxBet]],
+                Background -> bgColor,
+                BaseStyle  -> {Bold, 12, fg},
+                ImageSize  -> {60, 38},
+                Method     -> "Queued"
+            ];
 
         (* --- config change handlers --------------------------------------- *)
 
@@ -428,7 +488,7 @@ BlackjackGame[] :=
                     ImageSize           -> {420, 160},
                     PlotRangePadding    -> Scaled[0.05],
                     FrameLabel          -> {Style["round", White, 10],
-                                            Style["cumulative", White, 10]},
+                                            Style["cumulative $", White, 10]},
                     FrameTicksStyle     -> White,
                     AspectRatio         -> 0.38
                 ],
@@ -502,6 +562,86 @@ BlackjackGame[] :=
 
                     Spacer[{0, 10}],
 
+                    (* --- Bankroll / bet ---------------------------------- *)
+                    Panel[
+                        Column[{
+                            Row[{
+                                Dynamic @ infoBadge["Bankroll",
+                                    "$" <> ToString[NumberForm[bankroll, {Infinity, 2}]],
+                                    If[bankroll >= startingBank, $winColor,
+                                       If[bankroll < minBet, $loseColor, $gold]]
+                                ],
+                                Spacer[12],
+                                Dynamic @ infoBadge["Bet",
+                                    "$" <> ToString[NumberForm[currentBet, {Infinity, 2}]],
+                                    $gold
+                                ],
+                                Spacer[12],
+                                Dynamic @ infoBadge["Last round",
+                                    If[lastPayout == 0.,
+                                        "-",
+                                        (If[lastPayout > 0, "+$", "-$"]) <>
+                                        ToString[NumberForm[Abs[lastPayout], {Infinity, 2}]]
+                                    ],
+                                    Which[
+                                        lastPayout > 0, $winColor,
+                                        lastPayout < 0, $loseColor,
+                                        True,           White
+                                    ]
+                                ]
+                            }, Alignment -> Center],
+
+                            Spacer[{0, 8}],
+
+                            Row[{
+                                chipButton["$5",    5,   $loseColor],
+                                Spacer[6],
+                                chipButton["$25",   25,  $winColor],
+                                Spacer[6],
+                                chipButton["$100",  100, RGBColor["#111111"]],
+                                Spacer[14],
+                                Button[
+                                    Style["Clear", Bold, 12, White],
+                                    clearBet[],
+                                    Enabled    -> Dynamic[gameOver && currentBet > minBet],
+                                    Background -> GrayLevel[0.3],
+                                    BaseStyle  -> {Bold, 12, White},
+                                    ImageSize  -> {70, 34},
+                                    Method     -> "Queued"
+                                ],
+                                Spacer[6],
+                                Button[
+                                    Style["All in", Bold, 12, White],
+                                    maxOutBet[],
+                                    Enabled    -> Dynamic[gameOver && bankroll > minBet],
+                                    Background -> GrayLevel[0.3],
+                                    BaseStyle  -> {Bold, 12, White},
+                                    ImageSize  -> {70, 34},
+                                    Method     -> "Queued"
+                                ],
+                                Spacer[14],
+                                Dynamic @ Button[
+                                    Style["Rebuy +$" <>
+                                          ToString[NumberForm[startingBank, {Infinity, 0}]],
+                                          Bold, 12, Black],
+                                    doRebuy[],
+                                    Enabled    -> Dynamic[gameOver && bankroll < minBet],
+                                    Background -> $gold,
+                                    BaseStyle  -> {Bold, 12, Black},
+                                    ImageSize  -> {130, 34},
+                                    Method     -> "Queued"
+                                ]
+                            }, Alignment -> Center]
+                        }, Alignment -> Center],
+                        Background     -> $panelBg,
+                        FrameStyle     -> None,
+                        RoundingRadius -> 10,
+                        FrameMargins   -> 10,
+                        ImageSize      -> {660, All}
+                    ],
+
+                    Spacer[{0, 10}],
+
                     (* --- Dealer area ------------------------------------ *)
                     Dynamic[
                         labelBadge["Dealer's Hand",
@@ -564,8 +704,9 @@ BlackjackGame[] :=
                             Method     -> "Queued"
                         ],
                         Spacer[10],
-                        Button["New Game  (N)",
+                        Button["Deal  (N)",
                             startRound[],
+                            Enabled    -> Dynamic[gameOver && bankroll >= minBet],
                             Background -> $gold,
                             BaseStyle  -> {Black, Bold, 14},
                             ImageSize  -> {150, 40},
@@ -700,7 +841,9 @@ BlackjackGame[] :=
                                 Spacer[{0, 4}],
                                 Dynamic @ Style[
                                     "Rounds played: " <> ToString[Length[history]] <>
-                                    "    Net: " <> ToString[Total[history]],
+                                    "    Net: " <>
+                                    (If[Total[history] >= 0, "+$", "-$"]) <>
+                                    ToString[NumberForm[Abs[Total[history]], {Infinity, 2}]],
                                     $infoColor, 12
                                 ]
                             }, Alignment -> Center],

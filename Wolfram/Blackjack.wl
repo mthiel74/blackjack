@@ -36,6 +36,7 @@ HiLoCount::usage        = "HiLoCount[cards] sums HiLoValue over a list of cards.
 TrueCount::usage        = "TrueCount[runningCount, cardsRemaining] converts a running count into the true count per 52-card deck.";
 BasicStrategy::usage    = "BasicStrategy[playerHand, dealerUpcard] returns \"H\" or \"S\" under Hit/Stand-only basic strategy (no double, no split).";
 EstimateEV::usage       = "EstimateEV[playerHand, dealerUpcard, action, unseenDeck] Monte-Carlo-estimates the EV of \"Hit\" or \"Stand\" from the current state. Options: \"HitSoft17\", \"Trials\".";
+Payout::usage           = "Payout[result, bet, isBlackjack] returns the net bankroll change. A winning natural blackjack pays 3:2 when isBlackjack is True; other wins pay 1:1.";
 
 Begin["`Private`"];
 
@@ -249,6 +250,16 @@ outcomeValue[playerHand_List, dealerHand_List] :=
         HandScore[playerHand] > HandScore[dealerHand], +1,
         HandScore[playerHand] < HandScore[dealerHand], -1,
         True,                                          0
+    ];
+
+(* --- Payout ------------------------------------------------------------- *)
+
+Payout[result_String, bet_?NumericQ, isBlackjack_:False] :=
+    Switch[result,
+        "win",  If[TrueQ[isBlackjack], 1.5 * bet, 1. * bet],
+        "lose", -1. * bet,
+        "push",  0.,
+        _,       0.
     ];
 
 End[];
