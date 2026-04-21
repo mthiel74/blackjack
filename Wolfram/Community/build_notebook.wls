@@ -26,8 +26,10 @@ imgCell[name_, caption_String: ""] := Cell[
                            FontFamily -> "Helvetica"],
                      imgWidth, Alignment -> Center]},
                 Alignment -> Center, Spacings -> 0.6]]]],
-    "Output", ShowCellLabel -> False,
-    CellMargins -> {{0, 0}, {10, 14}}];
+    "Output",
+    ShowCellLabel  -> False,
+    TextAlignment  -> Center,
+    CellMargins    -> {{0, 0}, {10, 14}}];
 
 (* --- math typesetting helpers ------------------------------------- *)
 
@@ -572,7 +574,7 @@ Get[FileNameJoin[{packDir, \"Blackjack.wl\"}]];\n\
 Get[FileNameJoin[{packDir, \"BlackjackGame.wl\"}]];"],
     "Input", CellLabel -> "In[1]:="],
 
-Cell[BoxData["BlackjackGame[]"],
+Cell[BoxData["Pane[BlackjackGame[], Scaled[1], Alignment -> Center]"],
     "Input", CellLabel -> "In[2]:="],
 
 Cell[TextData[{
@@ -703,9 +705,17 @@ Rate\", ",
 };
 
 nb = Notebook[cells,
-    WindowSize   -> {1100, 800},
+    WindowSize    -> {1100, 800},
     WindowMargins -> {{Automatic, 0}, {Automatic, 0}},
-    StyleDefinitions -> "Default.nb",
+    (* Center all Output cells (figures + the live BlackjackGame[] cell) so
+       images and interactive elements sit mid-page, while keeping code and
+       text cells at their default alignment.                              *)
+    StyleDefinitions -> Notebook[{
+        Cell[StyleData[StyleDefinitions -> "Default.nb"]],
+        Cell[StyleData["Output"],        TextAlignment -> Center],
+        Cell[StyleData["Graphics"],      TextAlignment -> Center],
+        Cell[StyleData["DisplayFormula"], TextAlignment -> Center]
+    }],
     Saveable -> True];
 
 outNb  = FileNameJoin[{hereDir, "blackjack.nb"}];

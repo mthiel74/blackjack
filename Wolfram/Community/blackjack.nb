@@ -10,24 +10,24 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       154,          7]
-NotebookDataLength[    605806,      10262]
-NotebookOptionsPosition[    598602,      10177]
-NotebookOutlinePosition[    599013,      10194]
-CellTagsIndexPosition[    598970,      10191]
+NotebookDataLength[    606466,      10281]
+NotebookOptionsPosition[    598879,      10186]
+NotebookOutlinePosition[    599671,      10213]
+CellTagsIndexPosition[    599628,      10210]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
-Cell["Blackjack in the Wolfram Language", "Title",ExpressionUUID->"51b5c12f-bcb7-493f-b769-06b1774f3ad9"],
+Cell["Blackjack in the Wolfram Language", "Title",ExpressionUUID->"14302bfb-f81e-4873-ad99-e83a69f402cc"],
 
 Cell["\<\
 A complete casino game, a basic-strategy coach, and a Monte-Carlo \
 expected-value estimator, all in one package.\
-\>", "Subtitle",ExpressionUUID->"dfccdc8a-71d3-4c8f-8ab8-2cd240efa2fb"],
+\>", "Subtitle",ExpressionUUID->"99e36b41-1d16-4d8a-b9ff-23353dd4f70f"],
 
-Cell["Marco Thiel", "Author",ExpressionUUID->"222e981e-787f-4321-a6d4-0a2972d70e41"],
+Cell["Marco Thiel", "Author",ExpressionUUID->"73842534-d61d-4eac-a680-f110cb23df16"],
 
-Cell["Abstract", "Section",ExpressionUUID->"5d62ae55-1dca-491d-ba37-aa8eb4197d48"],
+Cell["Abstract", "Section",ExpressionUUID->"03c9f297-b9a9-4f72-b521-2c19d7e08c50"],
 
 Cell[TextData[{
  "This notebook presents a pure-Wolfram-Language implementation of Blackjack. \
@@ -48,14 +48,14 @@ natural (",
   FormBox[
    RowBox[{"P", "(", "BJ", ")"}], TraditionalForm]], "InlineFormula",
   FontFamily->"Times",ExpressionUUID->
-  "bfa07984-57e6-4961-aa96-d33534642555"],
+  "1e423f5a-be72-44cc-81e8-8d46db1abc06"],
  " \[TildeTilde] 4.83%), the dealer's final-total distribution for each \
 upcard, the Bellman formulation of the player's decision problem, the \
 resulting basic-strategy table, and the Hi-Lo card counting system with its \
 linear EV model and the Kelly betting criterion. Every figure in the document \
 is produced by the same code that powers the game; the game itself can be \
 launched from the cell at the end."
-}], "Text",ExpressionUUID->"286f482d-2c55-470e-ae3e-ba24ec968329"],
+}], "Text",ExpressionUUID->"48f08a97-b3d1-403a-8997-31b119c40767"],
 
 Cell[BoxData[
  TagBox[GridBox[{
@@ -2495,9 +2495,10 @@ and a cumulative bankroll plot.\"\>",
    GridBoxSpacings->{"Columns" -> {{Automatic}}, "Rows" -> {{0.6}}}],
   "Column"]], "Output",
  CellMargins->{{0, 0}, {10, 14}},
- ShowCellLabel->False,ExpressionUUID->"f991ce3a-4522-4039-9bf6-af872d6eb40a"],
+ ShowCellLabel->False,
+ TextAlignment->Center,ExpressionUUID->"ad78a8ac-9161-4d17-b09f-8d0f08d458e5"],
 
-Cell["1. What is Blackjack?", "Section",ExpressionUUID->"41cd4532-d8f3-4f8f-b92e-4f9ac46b6454"],
+Cell["1. What is Blackjack?", "Section",ExpressionUUID->"17260603-56af-48f8-8a43-20f8d87fb402"],
 
 Cell[TextData[{
  "Blackjack is a heads-up card game between a player and the house (the ",
@@ -2516,11 +2517,11 @@ face-up (the ",
   FontWeight->Bold],
  ". Cards count at face value; J, Q, K count 10; an Ace counts 1 or 11, \
 whichever gives a better total."
-}], "Text",ExpressionUUID->"4a3ac303-f19c-44f1-9d36-642d0fea465d"],
+}], "Text",ExpressionUUID->"469b73c2-58f3-4d51-90a1-48363a15bb02"],
 
 Cell["\<\
 The player acts first, repeatedly choosing one of five actions:\
-\>", "Text",ExpressionUUID->"5e55b2ab-4397-4bbf-bd0f-31c6d5977fc2"],
+\>", "Text",ExpressionUUID->"27df5fcc-4197-4264-b60a-0dd681a92e44"],
 
 Cell[TextData[{
  StyleBox["Hit ",
@@ -2540,7 +2541,7 @@ hit further;\n",
  StyleBox["Surrender ",
   FontWeight->Bold],
  "(not in this implementation) forfeit half the bet without playing."
-}], "Text",ExpressionUUID->"59ee59b6-83ec-4b76-9417-ea3cf4174fa5"],
+}], "Text",ExpressionUUID->"09824a9c-e227-4b18-9ab4-bbb407b97d56"],
 
 Cell[TextData[{
  "Once the player stands or busts on every hand, the dealer turns up the hole \
@@ -2558,9 +2559,9 @@ stands on it (\"S17\"); both rules are supported here via a checkbox in the \
  " \[LongDash] an ace plus any ten-valued card on the initial deal \
 \[LongDash] pays 3 : 2; other wins pay 1 : 1; equal totals push (0); the \
 player loses the bet on any bust regardless of the dealer's outcome."
-}], "Text",ExpressionUUID->"65141a29-80e4-4b4f-bfe4-a70d67d5deba"],
+}], "Text",ExpressionUUID->"3719c073-26b5-422a-8a9b-fe38e9434136"],
 
-Cell["2. Cards and visual representation", "Section",ExpressionUUID->"8369cdab-8ae9-486a-bf62-1928a5431f95"],
+Cell["2. Cards and visual representation", "Section",ExpressionUUID->"1e36d806-5666-46b9-9344-2475e8121f0d"],
 
 Cell[TextData[{
  "Each card is stored as a plain association with two keys: ",
@@ -2575,7 +2576,7 @@ Cell[TextData[{
  Cell[BoxData[
   FormBox["n", TraditionalForm]], "InlineFormula",
   FontFamily->"Times",ExpressionUUID->
-  "253ea3d3-2c5f-44d6-b87b-1bc1f91fb17a"],
+  "99034992-55ec-4bff-89af-34ec086b8999"],
  " times and applies ",
  StyleBox["RandomSample", "Input"],
  " for a uniform shuffle. Each face is rendered with pure ",
@@ -2584,7 +2585,7 @@ Cell[TextData[{
 corners, and a per-rank pip layout for 2\[Dash]10, a stylised letter for J / \
 Q / K, and one large suit pip for the Ace. The back shows a blue crosshatch \
 with a small central medallion."
-}], "Text",ExpressionUUID->"50893c07-7403-4786-be0e-94cafeb7cee7"],
+}], "Text",ExpressionUUID->"603dcbc3-552b-41f7-b34d-7d77a9925683"],
 
 Cell[BoxData[
  TagBox[GridBox[{
@@ -3880,16 +3881,17 @@ fanned.\"\>",
    GridBoxSpacings->{"Columns" -> {{Automatic}}, "Rows" -> {{0.6}}}],
   "Column"]], "Output",
  CellMargins->{{0, 0}, {10, 14}},
- ShowCellLabel->False,ExpressionUUID->"5a1de547-0c7c-4399-aae5-53c11aa70cae"],
+ ShowCellLabel->False,
+ TextAlignment->Center,ExpressionUUID->"8b7d564e-b562-4ac2-8eaa-5929ebdc84bf"],
 
-Cell["3. The mathematics of Blackjack", "Section",ExpressionUUID->"570bdeb0-4eff-4253-80cd-570aad409a24"],
+Cell["3. The mathematics of Blackjack", "Section",ExpressionUUID->"44e3edc5-ecdf-4f81-9b28-4a83b8b5f3bf"],
 
-Cell["3.1 Probability of a natural blackjack", "Subsection",ExpressionUUID->"d6b27609-1964-4eb8-853c-7f9d0f863a43"],
+Cell["3.1 Probability of a natural blackjack", "Subsection",ExpressionUUID->"ad59447e-7bad-4b35-bf2e-8a68454c7153"],
 
 Cell["\<\
 From a single freshly-shuffled deck of 52 cards, the probability that the \
 player's initial two cards form a natural blackjack is\
-\>", "Text",ExpressionUUID->"6a49cf81-f6c7-48f5-a62e-f827f10b778c"],
+\>", "Text",ExpressionUUID->"a8d40e61-04ad-49ce-931b-b338dd12b68a"],
 
 Cell[BoxData[
  FormBox[
@@ -3900,7 +3902,7 @@ Cell[BoxData[
     FractionBox["16", "51"]}], "\[TildeTilde]", "0.0483"}], 
   TraditionalForm]], "DisplayFormula",
  TextAlignment->Center,
- FontFamily->"Times",ExpressionUUID->"315f14a1-47ac-409c-908b-9fa34c42a850"],
+ FontFamily->"Times",ExpressionUUID->"6119040f-c76c-4126-8598-4b36ddec6a6b"],
 
 Cell[TextData[{
  "(four aces, sixteen ten-valued cards, and the order doesn't matter so we \
@@ -3911,9 +3913,9 @@ roughly ",
  " to the player's expected return per hand, which is the single largest \
 positive term in the house-edge calculation; take it away (some casinos now \
 pay 6 : 5) and the edge roughly doubles against the player."
-}], "Text",ExpressionUUID->"dd4b08c9-47a9-4e31-bfe5-36d3ddc93cd3"],
+}], "Text",ExpressionUUID->"b1d187a4-fb4d-4074-9c6b-aadbfd26c909"],
 
-Cell["3.2 Dealer bust probability", "Subsection",ExpressionUUID->"2d2b70bf-cf5a-4f49-9d21-06b27ed4b1e8"],
+Cell["3.2 Dealer bust probability", "Subsection",ExpressionUUID->"70dd4be7-05f9-4861-be3e-2f252bd64587"],
 
 Cell["\<\
 Because the dealer's policy is fixed, the distribution of the dealer's final \
@@ -3921,7 +3923,7 @@ total depends only on the upcard. In the infinite-deck approximation (cards \
 drawn with replacement from a full rank distribution) the dealer's hand is a \
 Markov chain on (hard total, soft?)-pairs, which we can enumerate exactly by \
 recursion:\
-\>", "Text",ExpressionUUID->"d99ed8df-63df-4dfe-b3f2-494c953df6d1"],
+\>", "Text",ExpressionUUID->"4d4e6035-254e-4673-8a75-30b862ff31e2"],
 
 Cell[BoxData[
  FormBox[
@@ -3932,21 +3934,21 @@ Cell[BoxData[
     SubscriptBox["T", "n"], ")"}], "=", 
    SubscriptBox["p", "card"]}], TraditionalForm]], "DisplayFormula",
  TextAlignment->Center,
- FontFamily->"Times",ExpressionUUID->"72bbd7e7-7641-4454-8463-82e9ffc99801"],
+ FontFamily->"Times",ExpressionUUID->"08cd818a-ad98-4458-937f-904f90570228"],
 
 Cell[TextData[{
  "The probability of finishing ",
  Cell[BoxData[
   FormBox["bust", TraditionalForm]], "InlineFormula",
   FontFamily->"Times",ExpressionUUID->
-  "e91c6137-8563-479a-aa8c-500082b95739"],
+  "742d36e0-0d64-4a35-91ec-03d27f18dcaf"],
  " from each starting upcard is plotted below. It is roughly U-shaped \
 \[LongDash] the dealer is most dangerous showing 7, 8, 9, 10, or A (where \
 bust probability is ~22\[Dash]25%), and most vulnerable showing 4, 5 or 6 \
 (bust probability ~40%). This single curve drives almost every asymmetry in \
 basic strategy: the player should stand on otherwise-weak totals when the \
 dealer is likely to bust, and press the action when the dealer is strong."
-}], "Text",ExpressionUUID->"92f52651-8e20-4f1a-97b1-fd186ffbf1d2"],
+}], "Text",ExpressionUUID->"73d6a6f4-0b92-47fa-8fb4-75f6edb11431"],
 
 Cell[BoxData[
  TagBox[GridBox[{
@@ -4869,14 +4871,15 @@ the reason the player stands on a hard 12-16 against those upcards.\"\>",
    GridBoxSpacings->{"Columns" -> {{Automatic}}, "Rows" -> {{0.6}}}],
   "Column"]], "Output",
  CellMargins->{{0, 0}, {10, 14}},
- ShowCellLabel->False,ExpressionUUID->"4352865f-76f1-432f-a5dc-52e802a7c874"],
+ ShowCellLabel->False,
+ TextAlignment->Center,ExpressionUUID->"b9e43678-371c-45ea-9685-64ccd59a6c8b"],
 
-Cell["3.3 Player decisions: the Bellman equation", "Subsection",ExpressionUUID->"55ed475d-d448-42e6-9519-19c8cab791d5"],
+Cell["3.3 Player decisions: the Bellman equation", "Subsection",ExpressionUUID->"5e9db743-e89b-4b85-992b-c347af6fa114"],
 
 Cell["\<\
 From the player's seat, each state is (hand, bet, dealer upcard, remaining \
 deck). The optimal value function satisfies the Bellman equation\
-\>", "Text",ExpressionUUID->"8fee164e-b4af-4074-8051-2a1446756bbd"],
+\>", "Text",ExpressionUUID->"b0f0e744-de2c-4638-a038-c100a287c43d"],
 
 Cell[BoxData[
  FormBox[
@@ -4887,7 +4890,7 @@ Cell[BoxData[
     SuperscriptBox["V", "*"], "(", "next", ")"}], "\[VerticalSeparator]", 
    "action", "]"}], TraditionalForm]], "DisplayFormula",
  TextAlignment->Center,
- FontFamily->"Times",ExpressionUUID->"75294ffd-c9dd-49ce-9e36-34421713cd25"],
+ FontFamily->"Times",ExpressionUUID->"7b4a83fb-00c8-47ec-8d6b-c5c9817347ca"],
 
 Cell[TextData[{
  "taken over available actions ",
@@ -4895,10 +4898,10 @@ Cell[TextData[{
   FormBox[
    RowBox[{"a", "\[Element]"}], TraditionalForm]], "InlineFormula",
   FontFamily->"Times",ExpressionUUID->
-  "10999ab0-1c7c-46ef-b069-8fd959b940dc"],
+  "5e23a32c-9993-45c8-affd-86b769caff1c"],
  " {Hit, Stand, Double, Split, Surrender}. The Stand branch is closed-form \
 once the dealer distribution is known,"
-}], "Text",ExpressionUUID->"84cd66e3-88ae-4a78-bcba-22ce5897b7cb"],
+}], "Text",ExpressionUUID->"b7092dda-9672-40b8-8362-ffec81fb778f"],
 
 Cell[BoxData[
  FormBox[
@@ -4920,7 +4923,7 @@ Cell[BoxData[
         RowBox[{"T", "'"}]}], ")"}]}]}]}]}], 
   TraditionalForm]], "DisplayFormula",
  TextAlignment->Center,
- FontFamily->"Times",ExpressionUUID->"2f378088-39a5-494f-ba08-c588fe70f00c"],
+ FontFamily->"Times",ExpressionUUID->"10b89550-812e-425b-a888-917a2b8c8e8e"],
 
 Cell[TextData[{
  "where ",
@@ -4930,24 +4933,24 @@ Cell[TextData[{
     RowBox[{"T", ",", " ", 
      RowBox[{"T", "'"}]}], ")"}], TraditionalForm]], "InlineFormula",
   FontFamily->"Times",ExpressionUUID->
-  "1bf830ad-f752-49ba-873d-e8dbdfdbe3b8"],
+  "4527e9c1-6dfd-4a78-a3c8-3a9c8722932f"],
  " is +1 (win), -1 (loss), or 0 (push). The Hit branch recursively invokes ",
  Cell[BoxData[
   FormBox[
    SuperscriptBox["V", "*"], TraditionalForm]], "InlineFormula",
   FontFamily->"Times",ExpressionUUID->
-  "e100e4a1-c6f7-4f8d-b23b-8321411e35a7"],
+  "471d8899-be7f-42dc-8eb5-0fd974f0b4a1"],
  " on the post-hit hand; in the finite-deck case the remaining deck is \
 smaller by one card, which is what separates the correctness of the \
 infinite-deck basic-strategy table from a composition-dependent optimum."
-}], "Text",ExpressionUUID->"81173961-6546-4726-9f55-31a2d66025b6"],
+}], "Text",ExpressionUUID->"71c7aeac-f93d-4f6e-931e-7735a743ecd8"],
 
-Cell["3.4 The house edge", "Subsection",ExpressionUUID->"ec248c6f-34f6-475d-8e67-e0b7bbba6125"],
+Cell["3.4 The house edge", "Subsection",ExpressionUUID->"b0132465-9234-45a8-8c55-0c748c8007fb"],
 
 Cell["\<\
 The house edge is the negative of the optimal player's expected return, \
 computed per unit bet over a uniform distribution of starting hands:\
-\>", "Text",ExpressionUUID->"69a245bb-be24-4c30-99ae-af946ba411fe"],
+\>", "Text",ExpressionUUID->"4f236c1d-4dc6-46c0-be8f-ebb53af6aee5"],
 
 Cell[BoxData[
  FormBox[
@@ -4956,7 +4959,7 @@ Cell[BoxData[
    RowBox[{"\[DoubleStruckCapitalE]", "[", "return", "]"}], "\[TildeTilde]", 
    "0.5", "%"}], TraditionalForm]], "DisplayFormula",
  TextAlignment->Center,
- FontFamily->"Times",ExpressionUUID->"fb9e5ded-fbf4-40dd-a547-f96252977581"],
+ FontFamily->"Times",ExpressionUUID->"70dfa1b8-bc64-4ba1-825a-1faaf4565a08"],
 
 Cell[TextData[{
  "with standard Las Vegas rules (6 decks, S17, 3 : 2 blackjack, \
@@ -4966,7 +4969,7 @@ restrictions push the edge up to roughly ",
  StyleBox["0.6-0.8%",
   FontWeight->Bold],
  " for a perfect player. Notable rule variations:"
-}], "Text",ExpressionUUID->"87bc1803-0399-40c2-9f43-7a8b7343c3f4"],
+}], "Text",ExpressionUUID->"6767536a-9fb0-4ca8-a025-2d26a6957e19"],
 
 Cell[TextData[{
  StyleBox["H17 instead of S17: ",
@@ -4981,9 +4984,9 @@ Cell[TextData[{
  StyleBox["No double after split: ",
   FontWeight->Bold],
  "+0.14%."
-}], "Text",ExpressionUUID->"18f72a9f-3fd7-4cea-b6b4-6f8d394e8637"],
+}], "Text",ExpressionUUID->"b6e3cdb5-e2c2-4fbd-b1cd-7b7738020a32"],
 
-Cell["4. Basic strategy", "Section",ExpressionUUID->"9b86a3c5-9810-4abd-80ac-21ac396bbe4c"],
+Cell["4. Basic strategy", "Section",ExpressionUUID->"25c4ded8-287c-4843-9f0d-102f070016e6"],
 
 Cell[TextData[{
  "Basic strategy is the action that maximises the Bellman value under the \
@@ -4998,7 +5001,7 @@ EV routine, the basic-strategy oracle returns ",
  " only; double and split are still available to the human player via the \
 buttons (and the strategy chart shows which 2-card starting hands benefit \
 from them)."
-}], "Text",ExpressionUUID->"1300560f-851e-4089-b347-db4472097ae4"],
+}], "Text",ExpressionUUID->"733825fe-c447-4d7c-97ab-fbfa23fa42b1"],
 
 Cell[BoxData[
  TagBox[GridBox[{
@@ -8167,7 +8170,8 @@ reduced view \[LongDash] e.g. the player's 11-vs-dealer-6 cell would read \
    GridBoxSpacings->{"Columns" -> {{Automatic}}, "Rows" -> {{0.6}}}],
   "Column"]], "Output",
  CellMargins->{{0, 0}, {10, 14}},
- ShowCellLabel->False,ExpressionUUID->"e8b7d36b-d1ea-4c2e-a443-f68511b0025f"],
+ ShowCellLabel->False,
+ TextAlignment->Center,ExpressionUUID->"535010c7-8ef4-4729-9e84-9dca827b3654"],
 
 Cell["\<\
 Two salient patterns in the chart: (a) the player stands on hard 12-16 \
@@ -8175,9 +8179,9 @@ exactly when the dealer upcard is 4, 5, or 6 (the valley in Figure 3); (b) \
 soft 18 is a stand against dealer 2-8 but a hit against 9, 10, or A \
 \[LongDash] the strong upcards force the player to improve even though 18 is \
 \"normally\" enough.\
-\>", "Text",ExpressionUUID->"e9f2daf3-59e1-44db-ab9f-2939b3ef38df"],
+\>", "Text",ExpressionUUID->"f3be453d-49ec-4e00-9a4c-79dadfaecb37"],
 
-Cell["5. Monte-Carlo expected value", "Section",ExpressionUUID->"41e83df7-f83e-4983-b427-c77560625a03"],
+Cell["5. Monte-Carlo expected value", "Section",ExpressionUUID->"3ab5e47a-b07f-4c6d-a223-a274c06b3035"],
 
 Cell[TextData[{
  "For any game state the package can estimate ",
@@ -8191,7 +8195,7 @@ the dealer's hole card (since the player doesn't know it); each trial draws \
 from this pool, plays the dealer under the current S17/H17 rule, and \
 \[LongDash] for Hit \[LongDash] continues the player under basic strategy \
 after the mandatory first extra card. The estimator is exposed as"
-}], "Text",ExpressionUUID->"fa065ad2-35c9-4217-bf98-39950e3c92e5"],
+}], "Text",ExpressionUUID->"f1631286-ab95-4a86-9eea-524c74e41997"],
 
 Cell[BoxData[
  RowBox[{"EstimateEV", "[", 
@@ -8200,7 +8204,7 @@ Cell[BoxData[
    "unseenDeck", ",", "\n", "             ", 
    RowBox[{"\"\<HitSoft17\>\"", " ", "->", " ", "False"}], ",", " ", 
    RowBox[{"\"\<Trials\>\"", " ", "->", " ", "600"}]}], "]"}]], "Input",
- ShowCellLabel->False,ExpressionUUID->"be8b4c21-ee6b-4acd-a41c-57e644fc9ef2"],
+ ShowCellLabel->False,ExpressionUUID->"761d9caa-e3be-4caf-bbc9-cfc4b7131fd1"],
 
 Cell[TextData[{
  "Rendering ",
@@ -8208,7 +8212,7 @@ Cell[TextData[{
   FontSlant->Italic],
  " over the player-total / dealer-upcard grid reproduces the shape of the \
 basic-strategy chart as a continuous surface:"
-}], "Text",ExpressionUUID->"b2cbdd17-052f-4fbe-aeda-a9a046d3a27d"],
+}], "Text",ExpressionUUID->"90ab98e1-a329-4536-84ed-d9ed6c32882a"],
 
 Cell[BoxData[
  TagBox[GridBox[{
@@ -9835,9 +9839,10 @@ versus dealer 2-6 coincide with the discrete H/S boundaries in Figure 4.\"\>",
    GridBoxSpacings->{"Columns" -> {{Automatic}}, "Rows" -> {{0.6}}}],
   "Column"]], "Output",
  CellMargins->{{0, 0}, {10, 14}},
- ShowCellLabel->False,ExpressionUUID->"ab7e2deb-b455-4588-b149-56f9063bc4e2"],
+ ShowCellLabel->False,
+ TextAlignment->Center,ExpressionUUID->"3513ec0a-58f0-4019-9fad-ce40960c3212"],
 
-Cell["6. Card counting", "Section",ExpressionUUID->"9ff629d1-09c9-4837-bac5-ee869803e24c"],
+Cell["6. Card counting", "Section",ExpressionUUID->"9cff7d39-5190-4230-b769-6754ca0f9c04"],
 
 Cell[TextData[{
  "Basic strategy assumes every card in the shoe is equally likely to be the \
@@ -9854,14 +9859,14 @@ simplest and most widespread system is ",
 high cards (10, J, Q, K, A). When many high cards remain, the dealer is more \
 likely to bust (Figure 3) and the player is more likely to draw a natural \
 \[LongDash] both in the player's favour."
-}], "Text",ExpressionUUID->"ef0cac57-448a-4b6a-90d8-6e99d78b6dbd"],
+}], "Text",ExpressionUUID->"d8ebbeb3-41de-4df5-acd5-499dc1ec5ff7"],
 
 Cell[TextData[{
  "The running count RC is converted to a ",
  StyleBox["true count",
   FontSlant->Italic],
  " TC by dividing by the number of decks remaining in the shoe,"
-}], "Text",ExpressionUUID->"6e80d0b8-d540-4223-902e-6779aed169c4"],
+}], "Text",ExpressionUUID->"da3c5b4d-8cb6-4b6f-82a9-ef58831a2f8a"],
 
 Cell[BoxData[
  FormBox[
@@ -9870,12 +9875,12 @@ Cell[BoxData[
     RowBox[{"decks", " ", "remaining"}]]}], 
   TraditionalForm]], "DisplayFormula",
  TextAlignment->Center,
- FontFamily->"Times",ExpressionUUID->"97beb378-496b-4d05-9460-1b2814e046b8"],
+ FontFamily->"Times",ExpressionUUID->"4b4bc82f-e91d-4df0-8d4e-835042da6018"],
 
 Cell["\<\
 which normalises the edge signal across different shoe penetrations. The \
 player's expected return is close to affine in TC,\
-\>", "Text",ExpressionUUID->"ae654b95-2b91-4f59-90ce-e2adb2d1b95a"],
+\>", "Text",ExpressionUUID->"1932d1fb-446a-43f3-9fb2-5dd0d74dcc68"],
 
 Cell[BoxData[
  FormBox[
@@ -9883,13 +9888,13 @@ Cell[BoxData[
   "EV", "(", "TC", ")", "\[TildeTilde]", "-", "0.5", "%", "+", "0.5", "%", "\[CenterDot]",
     "TC"}], TraditionalForm]], "DisplayFormula",
  TextAlignment->Center,
- FontFamily->"Times",ExpressionUUID->"4e2e2bb9-ace0-4556-9669-59dc26b5f537"],
+ FontFamily->"Times",ExpressionUUID->"4f9031fa-b2f2-4f31-8ed2-314f37930da2"],
 
 Cell["\<\
 for typical six-deck rules (the slope ~0.5% per true count is an empirical \
 regression coefficient). A classical counting bettor sizes the wager \
 proportionally to the edge via the Kelly criterion,\
-\>", "Text",ExpressionUUID->"d1de3bb9-35bc-452f-95a6-60ea90907f24"],
+\>", "Text",ExpressionUUID->"4504c33d-d016-49a4-9faf-be5b0ccfb266"],
 
 Cell[BoxData[
  FormBox[
@@ -9897,7 +9902,7 @@ Cell[BoxData[
    SubscriptBox["f", "*"], "=", 
    FractionBox["edge", "variance"]}], TraditionalForm]], "DisplayFormula",
  TextAlignment->Center,
- FontFamily->"Times",ExpressionUUID->"fb08fca7-46a8-48d0-a455-a00bcf2ba2db"],
+ FontFamily->"Times",ExpressionUUID->"db7b0a15-4813-4f3f-8a1d-1e2c29ecfd63"],
 
 Cell[TextData[{
  "capped at a practical table maximum. The game displays the live running and \
@@ -9909,11 +9914,11 @@ true counts in the ",
   FontSlant->Italic],
  " plot \[LongDash] so a curious player can watch their edge swing with the \
 count over a sufficiently long session."
-}], "Text",ExpressionUUID->"19a79222-3220-4c0a-8516-2dc2918bb77b"],
+}], "Text",ExpressionUUID->"be55da73-da96-45ea-8816-a18373f1e5b0"],
 
-Cell["7. Package architecture", "Section",ExpressionUUID->"2f662a32-7f59-4d1f-a0e0-83cd66dc9650"],
+Cell["7. Package architecture", "Section",ExpressionUUID->"8e1160bb-62c7-496d-897e-faae16c18e29"],
 
-Cell["The code is split into two paclet-style files:", "Text",ExpressionUUID->"a197f303-4bfc-48bf-a70f-8d06bd05fc4f"],
+Cell["The code is split into two paclet-style files:", "Text",ExpressionUUID->"cd438c66-e4b6-49b9-b160-49dcd4c8e06c"],
 
 Cell[TextData[{
  StyleBox["Blackjack.wl",
@@ -9957,7 +9962,7 @@ Cell[TextData[{
  ", ",
  StyleBox["EstimateEV", "Input"],
  "."
-}], "Text",ExpressionUUID->"83615da6-659f-4c67-8d4f-29312f4ba7ce"],
+}], "Text",ExpressionUUID->"e8b2ae07-5aa9-468b-911c-4127f819a38e"],
 
 Cell[TextData[{
  StyleBox["BlackjackGame.wl",
@@ -9980,7 +9985,7 @@ bankroll, bet, session history, running count, coach cache), all handlers (",
  ", ",
  StyleBox["playoutDealerAndSettle", "Input"],
  "), and all widgets (cards, badges, chip buttons, openers, session plot)."
-}], "Text",ExpressionUUID->"fd43d360-bded-4bf3-9356-73eabd62b1d7"],
+}], "Text",ExpressionUUID->"902966b7-fa8d-4ac3-9d47-5441ef89e08c"],
 
 Cell[TextData[{
  "The only non-obvious idiom is that all handler functions are declared in \
@@ -9993,9 +9998,9 @@ otherwise Button actions silently no-op after the first click because the \
 front-end holds stale references to temporary ",
  StyleBox["Module", "Input"],
  " symbols that have been garbage-collected."
-}], "Text",ExpressionUUID->"080e1432-580c-4fe7-b62c-3f73bc6c3c95"],
+}], "Text",ExpressionUUID->"7ba2668a-e066-4f60-930f-8f621988e0f3"],
 
-Cell["8. Play the game", "Section",ExpressionUUID->"ab3b6b03-8827-4315-8627-5ed9e55c42e4"],
+Cell["8. Play the game", "Section",ExpressionUUID->"e9154196-b04e-4731-a267-db13816e78fd"],
 
 Cell[TextData[{
  "The notebook loads the two packages from the parent directory of its own \
@@ -10004,7 +10009,7 @@ folder (that is, the directory containing ",
  " and ",
  StyleBox["BlackjackGame.wl", "Input"],
  "). Evaluate the cell below; a live playable game will appear underneath."
-}], "Text",ExpressionUUID->"58a5ace2-ab45-4600-b352-94671148aaf8"],
+}], "Text",ExpressionUUID->"ca9c513a-9a7b-40d4-8ebc-7fa35b9eb8e9"],
 
 Cell[BoxData[{
  RowBox[{
@@ -10026,11 +10031,15 @@ Cell[BoxData[{
     RowBox[{"{", 
      RowBox[{"packDir", ",", " ", "\"\<BlackjackGame.wl\>\""}], "}"}], "]"}], 
    "]"}], ";"}]}], "Input",
- CellLabel->"In[1]:=",ExpressionUUID->"c347de95-26ce-47be-a0c6-8f147f2c5a64"],
+ CellLabel->"In[1]:=",ExpressionUUID->"548c54ad-0a72-4a1c-b57e-abb95d2fc422"],
 
 Cell[BoxData[
- RowBox[{"BlackjackGame", "[", "]"}]], "Input",
- CellLabel->"In[2]:=",ExpressionUUID->"27ee3328-1648-4320-97cd-71f822ffbf83"],
+ RowBox[{"Pane", "[", 
+  RowBox[{
+   RowBox[{"BlackjackGame", "[", "]"}], ",", " ", 
+   RowBox[{"Scaled", "[", "1", "]"}], ",", " ", 
+   RowBox[{"Alignment", " ", "->", " ", "Center"}]}], "]"}]], "Input",
+ CellLabel->"In[2]:=",ExpressionUUID->"8452943f-4691-4ae8-9094-4db074f24c7a"],
 
 Cell[TextData[{
  StyleBox["How to play:",
@@ -10091,9 +10100,9 @@ estimate for the current state.\n",
  StyleBox["Session",
   FontSlant->Italic],
  " for a cumulative bankroll plot."
-}], "Text",ExpressionUUID->"55c8c2c3-6186-4bcf-b36e-dde8ffc3bf8e"],
+}], "Text",ExpressionUUID->"41caeca2-fc26-4695-9b18-a630f260b11e"],
 
-Cell["9. Standalone use (without the notebook)", "Section",ExpressionUUID->"689711fb-7fd2-4a66-8973-068ccddafd78"],
+Cell["9. Standalone use (without the notebook)", "Section",ExpressionUUID->"101a75bf-cf82-42d2-b483-319a660c5d85"],
 
 Cell[TextData[{
  "The game runs equally well outside this notebook, in any Wolfram Front End \
@@ -10104,19 +10113,19 @@ that supports ",
  " files from the ",
  StyleBox["Wolfram/", "Input"],
  " folder) and evaluate:"
-}], "Text",ExpressionUUID->"39bb68b6-a49b-41de-a379-b2c189e3b3cf"],
+}], "Text",ExpressionUUID->"d0f79d33-ec23-494d-905f-32592e69aab5"],
 
 Cell[BoxData[{
  RowBox[{"Get", "[", "\"\</path/to/Blackjack.wl\>\"", "]"}], "\n", 
  RowBox[{"Get", "[", "\"\</path/to/BlackjackGame.wl\>\"", "]"}], "\n", 
  RowBox[{"BlackjackGame", "[", "]"}]}], "Input",
- ShowCellLabel->False,ExpressionUUID->"cbe0351c-afab-42b4-9104-c26ff81568db"],
+ ShowCellLabel->False,ExpressionUUID->"c3e433ff-4527-4d17-b8f9-5fb8d616b65b"],
 
 Cell[TextData[{
  "Or, from a shell (requires ",
  StyleBox["wolframscript", "Input"],
  " and a Wolfram Front End):"
-}], "Text",ExpressionUUID->"a96a4ee7-602d-4f28-a64b-b8d975931197"],
+}], "Text",ExpressionUUID->"c976bb94-d6a8-4781-a220-cec582ccd2fa"],
 
 Cell[BoxData[
  RowBox[{"wolframscript", " ", "-", 
@@ -10124,7 +10133,7 @@ Cell[BoxData[
    RowBox[{
     RowBox[{"file", " ", "/", "path"}], "/", "to"}], "/", 
    RowBox[{"BlackjackGame", ".", "wl"}]}]}]], "Program",ExpressionUUID->\
-"8cd2d8e2-0f5a-4915-86be-e86ac6c5c4e1"],
+"52701d1f-5e03-412a-96df-5393980c751a"],
 
 Cell[TextData[{
  "which opens a notebook window with the game embedded. The ",
@@ -10136,9 +10145,9 @@ property), bust/blackjack/soft predicates, S17 and H17 dealer policy, ",
  " termination (random trials), round resolution, double/split eligibility, \
 payout math, Hi-Lo count, basic-strategy spot checks, and Monte-Carlo EV \
 ordering on two known positions."
-}], "Text",ExpressionUUID->"d676e591-6d63-404e-b210-b60d9b6890b1"],
+}], "Text",ExpressionUUID->"cd071a61-c46f-4042-a01a-7b1a4b714f7f"],
 
-Cell["10. References", "Section",ExpressionUUID->"3b1a70cf-0926-4c3d-a499-fe0e1f9f70b0"],
+Cell["10. References", "Section",ExpressionUUID->"c75c100e-b62d-49bd-b2d6-986c920aef7f"],
 
 Cell[TextData[{
  "\[Bullet] E. Thorp, ",
@@ -10173,14 +10182,24 @@ variations and composition-dependent strategy.\n",
   ButtonData->{
     URL["https://github.com/mthiel74/blackjack"], None}],
  "."
-}], "Text",ExpressionUUID->"266c432e-c66e-4865-9307-0368d0c7b327"]
+}], "Text",ExpressionUUID->"c08d4cf4-dca9-4684-b1c4-fa95944d52e2"]
 },
 Saveable->True,
 WindowSize->{1100, 800},
 WindowMargins->{{Automatic, 0}, {Automatic, 0}},
 FrontEndVersion->"15.0 for Mac OS X ARM (64-bit) (October 27, 2025)",
-StyleDefinitions->"Default.nb",
-ExpressionUUID->"6fc6934d-1afe-442c-8e48-af446cf7446f"
+StyleDefinitions->Notebook[{
+   Cell[
+    StyleData[StyleDefinitions -> "Default.nb"]], 
+   Cell[
+    StyleData["Output"], TextAlignment -> Center], 
+   Cell[
+    StyleData["Graphics"], TextAlignment -> Center], 
+   Cell[
+    StyleData["DisplayFormula"], TextAlignment -> Center]}, Visible -> False, 
+  FrontEndVersion -> "15.0 for Mac OS X ARM (64-bit) (October 27, 2025)", 
+  StyleDefinitions -> "Default.nb"],
+ExpressionUUID->"03500bd5-9835-463c-8004-d7db8ab0c4f6"
 ]
 (* End of Notebook Content *)
 
@@ -10193,77 +10212,77 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[554, 20, 105, 0, 70, "Title",ExpressionUUID->"51b5c12f-bcb7-493f-b769-06b1774f3ad9"],
-Cell[662, 22, 196, 3, 70, "Subtitle",ExpressionUUID->"dfccdc8a-71d3-4c8f-8ab8-2cd240efa2fb"],
-Cell[861, 27, 84, 0, 70, "Author",ExpressionUUID->"222e981e-787f-4321-a6d4-0a2972d70e41"],
-Cell[948, 29, 82, 0, 70, "Section",ExpressionUUID->"5d62ae55-1dca-491d-ba37-aa8eb4197d48"],
-Cell[1033, 31, 1391, 26, 70, "Text",ExpressionUUID->"286f482d-2c55-470e-ae3e-ba24ec968329"],
-Cell[2427, 59, 147768, 2438, 70, "Output",ExpressionUUID->"f991ce3a-4522-4039-9bf6-af872d6eb40a"],
-Cell[150198, 2499, 95, 0, 70, "Section",ExpressionUUID->"41cd4532-d8f3-4f8f-b92e-4f9ac46b6454"],
-Cell[150296, 2501, 724, 17, 70, "Text",ExpressionUUID->"4a3ac303-f19c-44f1-9d36-642d0fea465d"],
-Cell[151023, 2520, 142, 2, 70, "Text",ExpressionUUID->"5e55b2ab-4397-4bbf-bd0f-31c6d5977fc2"],
-Cell[151168, 2524, 687, 18, 70, "Text",ExpressionUUID->"59ee59b6-83ec-4b76-9417-ea3cf4174fa5"],
-Cell[151858, 2544, 748, 16, 70, "Text",ExpressionUUID->"65141a29-80e4-4b4f-bfe4-a70d67d5deba"],
-Cell[152609, 2562, 108, 0, 70, "Section",ExpressionUUID->"8369cdab-8ae9-486a-bf62-1928a5431f95"],
-Cell[152720, 2564, 1029, 22, 70, "Text",ExpressionUUID->"50893c07-7403-4786-be0e-94cafeb7cee7"],
-Cell[153752, 2588, 77932, 1294, 70, "Output",ExpressionUUID->"5a1de547-0c7c-4399-aae5-53c11aa70cae"],
-Cell[231687, 3884, 105, 0, 70, "Section",ExpressionUUID->"570bdeb0-4eff-4253-80cd-570aad409a24"],
-Cell[231795, 3886, 115, 0, 70, "Subsection",ExpressionUUID->"d6b27609-1964-4eb8-853c-7f9d0f863a43"],
-Cell[231913, 3888, 209, 3, 70, "Text",ExpressionUUID->"6a49cf81-f6c7-48f5-a62e-f827f10b778c"],
-Cell[232125, 3893, 353, 9, 70, "DisplayFormula",ExpressionUUID->"315f14a1-47ac-409c-908b-9fa34c42a850"],
-Cell[232481, 3904, 497, 9, 70, "Text",ExpressionUUID->"dd4b08c9-47a9-4e31-bfe5-36d3ddc93cd3"],
-Cell[232981, 3915, 104, 0, 70, "Subsection",ExpressionUUID->"2d2b70bf-cf5a-4f49-9d21-06b27ed4b1e8"],
-Cell[233088, 3917, 404, 6, 70, "Text",ExpressionUUID->"d99ed8df-63df-4dfe-b3f2-494c953df6d1"],
-Cell[233495, 3925, 356, 9, 70, "DisplayFormula",ExpressionUUID->"72bbd7e7-7641-4454-8463-82e9ffc99801"],
-Cell[233854, 3936, 720, 12, 70, "Text",ExpressionUUID->"92f52651-8e20-4f1a-97b1-fd186ffbf1d2"],
-Cell[234577, 3950, 55199, 921, 70, "Output",ExpressionUUID->"4352865f-76f1-432f-a5dc-52e802a7c874"],
-Cell[289779, 4873, 119, 0, 70, "Subsection",ExpressionUUID->"55ed475d-d448-42e6-9519-19c8cab791d5"],
-Cell[289901, 4875, 220, 3, 70, "Text",ExpressionUUID->"8fee164e-b4af-4074-8051-2a1446756bbd"],
-Cell[290124, 4880, 402, 9, 70, "DisplayFormula",ExpressionUUID->"75294ffd-c9dd-49ce-9e36-34421713cd25"],
-Cell[290529, 4891, 409, 9, 70, "Text",ExpressionUUID->"84cd66e3-88ae-4a78-bcba-22ce5897b7cb"],
-Cell[290941, 4902, 650, 20, 70, "DisplayFormula",ExpressionUUID->"2f378088-39a5-494f-ba08-c588fe70f00c"],
-Cell[291594, 4924, 795, 18, 70, "Text",ExpressionUUID->"81173961-6546-4726-9f55-31a2d66025b6"],
-Cell[292392, 4944, 95, 0, 70, "Subsection",ExpressionUUID->"ec248c6f-34f6-475d-8e67-e0b7bbba6125"],
-Cell[292490, 4946, 221, 3, 70, "Text",ExpressionUUID->"69a245bb-be24-4c30-99ae-af946ba411fe"],
-Cell[292714, 4951, 313, 7, 70, "DisplayFormula",ExpressionUUID->"fb9e5ded-fbf4-40dd-a547-f96252977581"],
-Cell[293030, 4960, 428, 8, 70, "Text",ExpressionUUID->"87bc1803-0399-40c2-9f43-7a8b7343c3f4"],
-Cell[293461, 4970, 408, 13, 70, "Text",ExpressionUUID->"18f72a9f-3fd7-4cea-b6b4-6f8d394e8637"],
-Cell[293872, 4985, 91, 0, 70, "Section",ExpressionUUID->"9b86a3c5-9810-4abd-80ac-21ac396bbe4c"],
-Cell[293966, 4987, 730, 13, 70, "Text",ExpressionUUID->"1300560f-851e-4089-b347-db4472097ae4"],
-Cell[294699, 5002, 192191, 3167, 70, "Output",ExpressionUUID->"e8b7d36b-d1ea-4c2e-a443-f68511b0025f"],
-Cell[486893, 8171, 398, 6, 70, "Text",ExpressionUUID->"e9f2daf3-59e1-44db-ab9f-2939b3ef38df"],
-Cell[487294, 8179, 103, 0, 70, "Section",ExpressionUUID->"41e83df7-f83e-4983-b427-c77560625a03"],
-Cell[487400, 8181, 601, 12, 70, "Text",ExpressionUUID->"fa065ad2-35c9-4217-bf98-39950e3c92e5"],
-Cell[488004, 8195, 441, 7, 70, "Input",ExpressionUUID->"be8b4c21-ee6b-4acd-a41c-57e644fc9ef2"],
-Cell[488448, 8204, 275, 6, 70, "Text",ExpressionUUID->"b2cbdd17-052f-4fbe-aeda-a9a046d3a27d"],
-Cell[488726, 8212, 98169, 1625, 70, "Output",ExpressionUUID->"ab7e2deb-b455-4588-b149-56f9063bc4e2"],
-Cell[586898, 9839, 90, 0, 70, "Section",ExpressionUUID->"9ff629d1-09c9-4837-bac5-ee869803e24c"],
-Cell[586991, 9841, 825, 15, 70, "Text",ExpressionUUID->"ef0cac57-448a-4b6a-90d8-6e99d78b6dbd"],
-Cell[587819, 9858, 237, 5, 70, "Text",ExpressionUUID->"6e80d0b8-d540-4223-902e-6779aed169c4"],
-Cell[588059, 9865, 252, 7, 70, "DisplayFormula",ExpressionUUID->"97beb378-496b-4d05-9460-1b2814e046b8"],
-Cell[588314, 9874, 204, 3, 70, "Text",ExpressionUUID->"ae654b95-2b91-4f59-90ce-e2adb2d1b95a"],
-Cell[588521, 9879, 275, 6, 70, "DisplayFormula",ExpressionUUID->"4e2e2bb9-ace0-4556-9669-59dc26b5f537"],
-Cell[588799, 9887, 278, 4, 70, "Text",ExpressionUUID->"d1de3bb9-35bc-452f-95a6-60ea90907f24"],
-Cell[589080, 9893, 243, 6, 70, "DisplayFormula",ExpressionUUID->"fb08fca7-46a8-48d0-a455-a00bcf2ba2db"],
-Cell[589326, 9901, 464, 10, 70, "Text",ExpressionUUID->"19a79222-3220-4c0a-8516-2dc2918bb77b"],
-Cell[589793, 9913, 97, 0, 70, "Section",ExpressionUUID->"2f662a32-7f59-4d1f-a0e0-83cd66dc9650"],
-Cell[589893, 9915, 117, 0, 70, "Text",ExpressionUUID->"a197f303-4bfc-48bf-a70f-8d06bd05fc4f"],
-Cell[590013, 9917, 935, 42, 70, "Text",ExpressionUUID->"83615da6-659f-4c67-8d4f-29312f4ba7ce"],
-Cell[590951, 9961, 706, 21, 70, "Text",ExpressionUUID->"fd43d360-bded-4bf3-9356-73eabd62b1d7"],
-Cell[591660, 9984, 562, 11, 70, "Text",ExpressionUUID->"080e1432-580c-4fe7-b62c-3f73bc6c3c95"],
-Cell[592225, 9997, 90, 0, 70, "Section",ExpressionUUID->"ab3b6b03-8827-4315-8627-5ed9e55c42e4"],
-Cell[592318, 9999, 366, 7, 70, "Text",ExpressionUUID->"58a5ace2-ab45-4600-b352-94671148aaf8"],
-Cell[592687, 10008, 724, 20, 70, "Input",ExpressionUUID->"c347de95-26ce-47be-a0c6-8f147f2c5a64"],
-Cell[593414, 10030, 139, 2, 70, "Input",ExpressionUUID->"27ee3328-1648-4320-97cd-71f822ffbf83"],
-Cell[593556, 10034, 1857, 59, 70, "Text",ExpressionUUID->"55c8c2c3-6186-4bcf-b36e-dde8ffc3bf8e"],
-Cell[595416, 10095, 114, 0, 70, "Section",ExpressionUUID->"689711fb-7fd2-4a66-8973-068ccddafd78"],
-Cell[595533, 10097, 375, 9, 70, "Text",ExpressionUUID->"39bb68b6-a49b-41de-a379-b2c189e3b3cf"],
-Cell[595911, 10108, 281, 4, 70, "Input",ExpressionUUID->"cbe0351c-afab-42b4-9104-c26ff81568db"],
-Cell[596195, 10114, 181, 4, 70, "Text",ExpressionUUID->"a96a4ee7-602d-4f28-a64b-b8d975931197"],
-Cell[596379, 10120, 246, 6, 70, "Program",ExpressionUUID->"8cd2d8e2-0f5a-4915-86be-e86ac6c5c4e1"],
-Cell[596628, 10128, 611, 10, 70, "Text",ExpressionUUID->"d676e591-6d63-404e-b210-b60d9b6890b1"],
-Cell[597242, 10140, 88, 0, 70, "Section",ExpressionUUID->"3b1a70cf-0926-4c3d-a499-fe0e1f9f70b0"],
-Cell[597333, 10142, 1265, 33, 70, "Text",ExpressionUUID->"266c432e-c66e-4865-9307-0368d0c7b327"]
+Cell[554, 20, 105, 0, 70, "Title",ExpressionUUID->"14302bfb-f81e-4873-ad99-e83a69f402cc"],
+Cell[662, 22, 196, 3, 70, "Subtitle",ExpressionUUID->"99e36b41-1d16-4d8a-b9ff-23353dd4f70f"],
+Cell[861, 27, 84, 0, 70, "Author",ExpressionUUID->"73842534-d61d-4eac-a680-f110cb23df16"],
+Cell[948, 29, 82, 0, 70, "Section",ExpressionUUID->"03c9f297-b9a9-4f72-b521-2c19d7e08c50"],
+Cell[1033, 31, 1391, 26, 70, "Text",ExpressionUUID->"48f08a97-b3d1-403a-8997-31b119c40767"],
+Cell[2427, 59, 147792, 2439, 70, "Output",ExpressionUUID->"ad78a8ac-9161-4d17-b09f-8d0f08d458e5"],
+Cell[150222, 2500, 95, 0, 70, "Section",ExpressionUUID->"17260603-56af-48f8-8a43-20f8d87fb402"],
+Cell[150320, 2502, 724, 17, 70, "Text",ExpressionUUID->"469b73c2-58f3-4d51-90a1-48363a15bb02"],
+Cell[151047, 2521, 142, 2, 70, "Text",ExpressionUUID->"27df5fcc-4197-4264-b60a-0dd681a92e44"],
+Cell[151192, 2525, 687, 18, 70, "Text",ExpressionUUID->"09824a9c-e227-4b18-9ab4-bbb407b97d56"],
+Cell[151882, 2545, 748, 16, 70, "Text",ExpressionUUID->"3719c073-26b5-422a-8a9b-fe38e9434136"],
+Cell[152633, 2563, 108, 0, 70, "Section",ExpressionUUID->"1e36d806-5666-46b9-9344-2475e8121f0d"],
+Cell[152744, 2565, 1029, 22, 70, "Text",ExpressionUUID->"603dcbc3-552b-41f7-b34d-7d77a9925683"],
+Cell[153776, 2589, 77956, 1295, 70, "Output",ExpressionUUID->"8b7d564e-b562-4ac2-8eaa-5929ebdc84bf"],
+Cell[231735, 3886, 105, 0, 70, "Section",ExpressionUUID->"44e3edc5-ecdf-4f81-9b28-4a83b8b5f3bf"],
+Cell[231843, 3888, 115, 0, 70, "Subsection",ExpressionUUID->"ad59447e-7bad-4b35-bf2e-8a68454c7153"],
+Cell[231961, 3890, 209, 3, 70, "Text",ExpressionUUID->"a8d40e61-04ad-49ce-931b-b338dd12b68a"],
+Cell[232173, 3895, 353, 9, 70, "DisplayFormula",ExpressionUUID->"6119040f-c76c-4126-8598-4b36ddec6a6b"],
+Cell[232529, 3906, 497, 9, 70, "Text",ExpressionUUID->"b1d187a4-fb4d-4074-9c6b-aadbfd26c909"],
+Cell[233029, 3917, 104, 0, 70, "Subsection",ExpressionUUID->"70dd4be7-05f9-4861-be3e-2f252bd64587"],
+Cell[233136, 3919, 404, 6, 70, "Text",ExpressionUUID->"4d4e6035-254e-4673-8a75-30b862ff31e2"],
+Cell[233543, 3927, 356, 9, 70, "DisplayFormula",ExpressionUUID->"08cd818a-ad98-4458-937f-904f90570228"],
+Cell[233902, 3938, 720, 12, 70, "Text",ExpressionUUID->"73d6a6f4-0b92-47fa-8fb4-75f6edb11431"],
+Cell[234625, 3952, 55223, 922, 70, "Output",ExpressionUUID->"b9e43678-371c-45ea-9685-64ccd59a6c8b"],
+Cell[289851, 4876, 119, 0, 70, "Subsection",ExpressionUUID->"5e9db743-e89b-4b85-992b-c347af6fa114"],
+Cell[289973, 4878, 220, 3, 70, "Text",ExpressionUUID->"b0f0e744-de2c-4638-a038-c100a287c43d"],
+Cell[290196, 4883, 402, 9, 70, "DisplayFormula",ExpressionUUID->"7b4a83fb-00c8-47ec-8d6b-c5c9817347ca"],
+Cell[290601, 4894, 409, 9, 70, "Text",ExpressionUUID->"b7092dda-9672-40b8-8362-ffec81fb778f"],
+Cell[291013, 4905, 650, 20, 70, "DisplayFormula",ExpressionUUID->"10b89550-812e-425b-a888-917a2b8c8e8e"],
+Cell[291666, 4927, 795, 18, 70, "Text",ExpressionUUID->"71c7aeac-f93d-4f6e-931e-7735a743ecd8"],
+Cell[292464, 4947, 95, 0, 70, "Subsection",ExpressionUUID->"b0132465-9234-45a8-8c55-0c748c8007fb"],
+Cell[292562, 4949, 221, 3, 70, "Text",ExpressionUUID->"4f236c1d-4dc6-46c0-be8f-ebb53af6aee5"],
+Cell[292786, 4954, 313, 7, 70, "DisplayFormula",ExpressionUUID->"70dfa1b8-bc64-4ba1-825a-1faaf4565a08"],
+Cell[293102, 4963, 428, 8, 70, "Text",ExpressionUUID->"6767536a-9fb0-4ca8-a025-2d26a6957e19"],
+Cell[293533, 4973, 408, 13, 70, "Text",ExpressionUUID->"b6e3cdb5-e2c2-4fbd-b1cd-7b7738020a32"],
+Cell[293944, 4988, 91, 0, 70, "Section",ExpressionUUID->"25c4ded8-287c-4843-9f0d-102f070016e6"],
+Cell[294038, 4990, 730, 13, 70, "Text",ExpressionUUID->"733825fe-c447-4d7c-97ab-fbfa23fa42b1"],
+Cell[294771, 5005, 192215, 3168, 70, "Output",ExpressionUUID->"535010c7-8ef4-4729-9e84-9dca827b3654"],
+Cell[486989, 8175, 398, 6, 70, "Text",ExpressionUUID->"f3be453d-49ec-4e00-9a4c-79dadfaecb37"],
+Cell[487390, 8183, 103, 0, 70, "Section",ExpressionUUID->"3ab5e47a-b07f-4c6d-a223-a274c06b3035"],
+Cell[487496, 8185, 601, 12, 70, "Text",ExpressionUUID->"f1631286-ab95-4a86-9eea-524c74e41997"],
+Cell[488100, 8199, 441, 7, 70, "Input",ExpressionUUID->"761d9caa-e3be-4caf-bbc9-cfc4b7131fd1"],
+Cell[488544, 8208, 275, 6, 70, "Text",ExpressionUUID->"90ab98e1-a329-4536-84ed-d9ed6c32882a"],
+Cell[488822, 8216, 98193, 1626, 70, "Output",ExpressionUUID->"3513ec0a-58f0-4019-9fad-ce40960c3212"],
+Cell[587018, 9844, 90, 0, 70, "Section",ExpressionUUID->"9cff7d39-5190-4230-b769-6754ca0f9c04"],
+Cell[587111, 9846, 825, 15, 70, "Text",ExpressionUUID->"d8ebbeb3-41de-4df5-acd5-499dc1ec5ff7"],
+Cell[587939, 9863, 237, 5, 70, "Text",ExpressionUUID->"da3c5b4d-8cb6-4b6f-82a9-ef58831a2f8a"],
+Cell[588179, 9870, 252, 7, 70, "DisplayFormula",ExpressionUUID->"4b4bc82f-e91d-4df0-8d4e-835042da6018"],
+Cell[588434, 9879, 204, 3, 70, "Text",ExpressionUUID->"1932d1fb-446a-43f3-9fb2-5dd0d74dcc68"],
+Cell[588641, 9884, 275, 6, 70, "DisplayFormula",ExpressionUUID->"4f9031fa-b2f2-4f31-8ed2-314f37930da2"],
+Cell[588919, 9892, 278, 4, 70, "Text",ExpressionUUID->"4504c33d-d016-49a4-9faf-be5b0ccfb266"],
+Cell[589200, 9898, 243, 6, 70, "DisplayFormula",ExpressionUUID->"db7b0a15-4813-4f3f-8a1d-1e2c29ecfd63"],
+Cell[589446, 9906, 464, 10, 70, "Text",ExpressionUUID->"be55da73-da96-45ea-8816-a18373f1e5b0"],
+Cell[589913, 9918, 97, 0, 70, "Section",ExpressionUUID->"8e1160bb-62c7-496d-897e-faae16c18e29"],
+Cell[590013, 9920, 117, 0, 70, "Text",ExpressionUUID->"cd438c66-e4b6-49b9-b160-49dcd4c8e06c"],
+Cell[590133, 9922, 935, 42, 70, "Text",ExpressionUUID->"e8b2ae07-5aa9-468b-911c-4127f819a38e"],
+Cell[591071, 9966, 706, 21, 70, "Text",ExpressionUUID->"902966b7-fa8d-4ac3-9d47-5441ef89e08c"],
+Cell[591780, 9989, 562, 11, 70, "Text",ExpressionUUID->"7ba2668a-e066-4f60-930f-8f621988e0f3"],
+Cell[592345, 10002, 90, 0, 70, "Section",ExpressionUUID->"e9154196-b04e-4731-a267-db13816e78fd"],
+Cell[592438, 10004, 366, 7, 70, "Text",ExpressionUUID->"ca9c513a-9a7b-40d4-8ebc-7fa35b9eb8e9"],
+Cell[592807, 10013, 724, 20, 70, "Input",ExpressionUUID->"548c54ad-0a72-4a1c-b57e-abb95d2fc422"],
+Cell[593534, 10035, 296, 6, 70, "Input",ExpressionUUID->"8452943f-4691-4ae8-9094-4db074f24c7a"],
+Cell[593833, 10043, 1857, 59, 70, "Text",ExpressionUUID->"41caeca2-fc26-4695-9b18-a630f260b11e"],
+Cell[595693, 10104, 114, 0, 70, "Section",ExpressionUUID->"101a75bf-cf82-42d2-b483-319a660c5d85"],
+Cell[595810, 10106, 375, 9, 70, "Text",ExpressionUUID->"d0f79d33-ec23-494d-905f-32592e69aab5"],
+Cell[596188, 10117, 281, 4, 70, "Input",ExpressionUUID->"c3e433ff-4527-4d17-b8f9-5fb8d616b65b"],
+Cell[596472, 10123, 181, 4, 70, "Text",ExpressionUUID->"c976bb94-d6a8-4781-a220-cec582ccd2fa"],
+Cell[596656, 10129, 246, 6, 70, "Program",ExpressionUUID->"52701d1f-5e03-412a-96df-5393980c751a"],
+Cell[596905, 10137, 611, 10, 70, "Text",ExpressionUUID->"cd071a61-c46f-4042-a01a-7b1a4b714f7f"],
+Cell[597519, 10149, 88, 0, 70, "Section",ExpressionUUID->"c75c100e-b62d-49bd-b2d6-986c920aef7f"],
+Cell[597610, 10151, 1265, 33, 70, "Text",ExpressionUUID->"c08d4cf4-dca9-4684-b1c4-fa95944d52e2"]
 }
 ]
 *)
