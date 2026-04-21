@@ -68,13 +68,13 @@ $pipPositions = <|
              {0.5, 0.48}, {0.3, 0.30}, {0.7, 0.30}}
 |>;
 
-(* Size constants tuned for ImageSize -> {65, 98}.                      *)
-$cornerRankSize = 11;
-$cornerSuitSize = 10;
-$pipFontSize    = 12;
-$aceFontSize    = 34;
-$faceRankSize   = 28;
-$faceSuitSize   = 15;
+(* Size constants tuned for ImageSize -> {82, 123}.                     *)
+$cornerRankSize = 14;
+$cornerSuitSize = 12;
+$pipFontSize    = 15;
+$aceFontSize    = 42;
+$faceRankSize   = 34;
+$faceSuitSize   = 19;
 
 cardFaceLayout[rank_String, suit_String, col_] :=
     Which[
@@ -142,7 +142,7 @@ cardGraphic[card_Association] :=
                 (* face *)
                 cardFaceLayout[rank, suit, col]
             },
-            ImageSize   -> {65, 98},
+            ImageSize   -> {82, 123},
             PlotRange   -> {{0, 1}, {0, 1.5}},
             AspectRatio -> 1.5
         ]
@@ -166,7 +166,7 @@ hiddenCardGraphic[] :=
             Disk[{0.5, 0.75}, {0.22, 0.22}],
             GrayLevel[1, 0.8],
             Text[Style["\[SpadeSuit]\[HeartSuit]",
-                       FontSize -> 16, FontWeight -> Bold],
+                       FontSize -> 20, FontWeight -> Bold],
                  {0.5, 0.75}]
         },
         ImageSize   -> {65, 98},
@@ -663,7 +663,7 @@ BlackjackGame[] :=
                                       Directive[$feltMid, Thickness[0.8]]],
                     RoundingRadius -> 10,
                     FrameMargins   -> 8,
-                    ImageSize      -> {All, 165}
+                    ImageSize      -> {All, 195}
                 ]
             ];
 
@@ -879,7 +879,7 @@ BlackjackGame[] :=
                         FrameStyle     -> None,
                         RoundingRadius -> 10,
                         FrameMargins   -> 10,
-                        ImageSize      -> {All, 110}
+                        ImageSize      -> {All, 138}
                     ],
 
                     Spacer[{0, 12}],
