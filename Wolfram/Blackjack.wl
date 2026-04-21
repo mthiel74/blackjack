@@ -37,6 +37,8 @@ TrueCount::usage        = "TrueCount[runningCount, cardsRemaining] converts a ru
 BasicStrategy::usage    = "BasicStrategy[playerHand, dealerUpcard] returns \"H\" or \"S\" under Hit/Stand-only basic strategy (no double, no split).";
 EstimateEV::usage       = "EstimateEV[playerHand, dealerUpcard, action, unseenDeck] Monte-Carlo-estimates the EV of \"Hit\" or \"Stand\" from the current state. Options: \"HitSoft17\", \"Trials\".";
 Payout::usage           = "Payout[result, bet, isBlackjack] returns the net bankroll change. A winning natural blackjack pays 3:2 when isBlackjack is True; other wins pay 1:1.";
+CanDouble::usage        = "CanDouble[hand] is True when the hand is eligible for a double-down (exactly two cards).";
+CanSplit::usage         = "CanSplit[hand] is True when the hand is two cards of equal point value (pairs, plus any two ten-value cards).";
 
 Begin["`Private`"];
 
@@ -261,6 +263,14 @@ Payout[result_String, bet_?NumericQ, isBlackjack_:False] :=
         "push",  0.,
         _,       0.
     ];
+
+(* --- Double / split eligibility ----------------------------------------- *)
+
+CanDouble[hand_List] := Length[hand] === 2;
+
+CanSplit[hand_List] :=
+    Length[hand] === 2 &&
+    rankPointsTable[hand[[1]]["value"]] === rankPointsTable[hand[[2]]["value"]];
 
 End[];
 EndPackage[];

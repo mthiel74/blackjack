@@ -127,6 +127,16 @@ assert[Blackjack`BasicStrategy[{mk["A"], mk["8"]},  mk["10"]] === "S",          
 assert[Blackjack`BasicStrategy[{mk["A"], mk["6"]},  mk["5"]]  === "H",             "soft 17 vs 5: hit"];
 assert[Blackjack`BasicStrategy[{mk["5"], mk["5"]},  mk["10"]] === "H",             "10 vs 10: hit"];
 
+(* ===== Double / split eligibility ======================================== *)
+Print["--- double/split eligibility ---"];
+assert[Blackjack`CanDouble[{mk["5"], mk["6"]}],                                    "can double on 2 cards"];
+assert[!Blackjack`CanDouble[{mk["5"], mk["6"], mk["2"]}],                          "cannot double on 3 cards"];
+assert[Blackjack`CanSplit[{mk["8"], mk["8"]}],                                     "can split matching pair"];
+assert[Blackjack`CanSplit[{mk["10"], mk["J"]}],                                    "can split 10-value pair (10+J)"];
+assert[Blackjack`CanSplit[{mk["Q"], mk["K"]}],                                     "can split 10-value pair (Q+K)"];
+assert[!Blackjack`CanSplit[{mk["8"], mk["9"]}],                                    "cannot split 8+9"];
+assert[!Blackjack`CanSplit[{mk["A"], mk["A"], mk["A"]}],                           "cannot split 3 cards"];
+
 (* ===== Payout ============================================================ *)
 Print["--- payout ---"];
 assert[Blackjack`Payout["win",  10]        ===  10.,                               "regular win pays 1:1"];

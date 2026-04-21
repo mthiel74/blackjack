@@ -253,8 +253,10 @@ actionLong[_]   := "-";
 BlackjackGame[] :=
     DynamicModule[
         {
-            (* core state *)
-            deck, playerHand = {}, dealerHand = {},
+            (* core state: multi-hand player, single dealer *)
+            deck, playerHands = {{}}, dealerHand = {},
+            playerBets = {}, playerStatus = {}, fromSplit = {},
+            currentHandIdx = 1,
             gameOver = False, message = "", result = "",
             revealDealer = False,
 
@@ -279,11 +281,16 @@ BlackjackGame[] :=
             (* helper function symbols -- declared here so their DownValues
                share the DynamicModule's persistent dynamic context and
                survive across FE button clicks. *)
-            finish, startRound, doHit, doStand, doReset, doRebuy,
+            startRound, doHit, doStand, doDouble, doSplit,
+            doReset, doRebuy,
+            advanceHand, playoutDealerAndSettle, finishRound,
+            canDoubleNow, canSplitNow, anyHandLive,
+            currentHand, currentHandStatus, totalAtRisk,
             reshuffleIfNeeded, absorbRound, unseenCards,
             displayCount, recomputeEV, sessionPlot,
             onDecksChange, onSoft17Change, addChip, clearBet, maxOutBet,
-            chipButton
+            chipButton, formatMoney,
+            handBox, playerDisplay, playerScoreLabel
         },
 
         (* --- reshuffle logic ---------------------------------------------- *)
@@ -295,8 +302,20 @@ BlackjackGame[] :=
         ];
 
         absorbRound[] := (
-            historicalCount += HiLoCount[playerHand] + HiLoCount[dealerHand];
+            historicalCount +=
+                Total[HiLoCount /@ playerHands] + HiLoCount[dealerHand];
         );
+
+        (* --- helpers ------------------------------------------------------ *)
+        currentHand[]       := playerHands[[currentHandIdx]];
+        currentHandStatus[] := playerStatus[[currentHandIdx]];
+        totalAtRisk[]       := Total[playerBets];
+        anyHandLive[]       := AnyTrue[playerStatus,
+                                   # =!= "bust" && # =!= "settled" &];
+
+        formatMoney[x_?NumericQ] :=
+            (If[x > 0, "+$", If[x < 0, "-$", "$"]]) <>
+            ToString[NumberForm[Abs[N[x]], {Infinity, 2}]];
 
         (* --- unseen = actual remaining deck + dealer's hidden hole card --- *)
         unseenCards[] :=
@@ -306,7 +325,7 @@ BlackjackGame[] :=
             ];
 
         displayCount[] :=
-            historicalCount + HiLoCount[playerHand] +
+            historicalCount + Total[HiLoCount /@ playerHands] +
                 If[revealDealer || gameOver,
                     HiLoCount[dealerHand],
                     HiLoCount[Take[dealerHand, UpTo[1]]]
@@ -314,90 +333,216 @@ BlackjackGame[] :=
 
         (* --- round flow --------------------------------------------------- *)
 
-        finish[res_String, msg_String] := Module[{isBJ, payout, richMsg},
+        finishRound[res_String, msg_String, delta_?NumericQ] := (
             gameOver     = True;
             revealDealer = True;
             result       = res;
-
-            (* 3:2 payout only on a natural (two-card) player blackjack *)
-            isBJ   = (res === "win" && IsBlackjack[playerHand]);
-            payout = Payout[res, roundBet, isBJ];
-            bankroll   += payout;
-            lastPayout  = payout;
-
-            richMsg = msg <> "   (" <>
-                      Which[payout > 0, "+$", payout < 0, "-$", True, "$"] <>
-                      ToString[NumberForm[Abs[payout], {Infinity, 2}]] <> ")";
-            message = richMsg;
-
+            bankroll    += delta;
+            lastPayout   = delta;
+            message      = msg <> "   (" <> formatMoney[delta] <> ")";
             Switch[res,
                 "win",  wins++,
                 "lose", losses++,
                 "push", pushes++
             ];
-            AppendTo[history, payout];
+            AppendTo[history, delta];
             evStale = True;
-        ];
+        );
 
         startRound[] := Module[{p, dh, d, pScore, dScore, effBet},
-            If[Length[playerHand] > 0 || Length[dealerHand] > 0, absorbRound[]];
+            If[AnyTrue[playerHands, Length[#] > 0 &] || Length[dealerHand] > 0,
+                absorbRound[]];
             reshuffleIfNeeded[];
 
-            (* Lock in the bet for this round. Bet is clamped to available
-               bankroll in case the player went negative on the last round. *)
-            effBet = Clip[currentBet, {Min[minBet, bankroll], Max[bankroll, minBet]}];
+            (* Lock in the bet for this round. Bet is clamped to bankroll. *)
+            effBet = Clip[currentBet, {minBet, Min[bankroll, maxBet]}];
             If[effBet > bankroll, effBet = bankroll];
-            If[effBet < minBet,   effBet = Min[minBet, bankroll]];
             currentBet = effBet;
             roundBet   = effBet;
             lastPayout = 0.;
 
-            gameOver     = False;
-            revealDealer = False;
-            result       = "";
-            message      = "";
-            evStale      = True;
+            gameOver       = False;
+            revealDealer   = False;
+            result         = "";
+            message        = "";
+            evStale        = True;
+            currentHandIdx = 1;
 
             {p, dh, d}   = DealInitial[deck];
-            playerHand   = p;
+            playerHands  = {p};
+            playerBets   = {roundBet};
+            playerStatus = {"playing"};
+            fromSplit    = {False};
             dealerHand   = dh;
             deck         = d;
 
-            pScore = HandScore[playerHand];
-            dScore = HandScore[dealerHand];
+            pScore = HandScore[p];
+            dScore = HandScore[dh];
 
             Which[
-                pScore === 21 && dScore === 21, finish["push", "Both have Blackjack! Push!"],
-                pScore === 21,                  finish["win",  "Blackjack! You win!"],
-                dScore === 21,                  finish["lose", "Dealer has Blackjack! You lose!"]
+                pScore === 21 && dScore === 21,
+                    playerStatus = {"settled"};
+                    finishRound["push", "Both have Blackjack! Push!", 0.],
+                pScore === 21,
+                    playerStatus = {"settled"};
+                    finishRound["win",  "Blackjack! You win!",
+                                Payout["win", roundBet, True]],
+                dScore === 21,
+                    playerStatus = {"settled"};
+                    finishRound["lose", "Dealer has Blackjack! You lose!",
+                                Payout["lose", roundBet]]
             ];
         ];
 
-        doHit[] := If[!gameOver,
-            Module[{card, score},
-                {card, deck} = DrawCard[deck];
-                AppendTo[playerHand, card];
-                evStale = True;
-                score = HandScore[playerHand];
-                Which[
-                    score > 21,   finish["lose", "Bust! You lose!"],
-                    score === 21, doStand[]
-                ];
+        advanceHand[] := Module[{next = currentHandIdx + 1},
+            While[next <= Length[playerHands] &&
+                    playerStatus[[next]] =!= "playing",
+                next++
+            ];
+            If[next > Length[playerHands],
+                playoutDealerAndSettle[]
+                ,
+                currentHandIdx = next
             ]
         ];
 
-        doStand[] := If[!gameOver,
-            Module[{res, msg, card},
-                revealDealer = True;
-                Pause[dealerPace];
-                While[DealerShouldHit[dealerHand, hitSoft17],
-                    {card, deck} = DrawCard[deck];
-                    AppendTo[dealerHand, card];
-                    Pause[dealerPace];
-                ];
-                {res, msg} = ResolveRound[playerHand, dealerHand];
-                finish[res, msg];
+        doHit[] := If[!gameOver && currentHandStatus[] === "playing",
+            Module[{card, score, hand},
+                {card, deck} = DrawCard[deck];
+                playerHands[[currentHandIdx]] =
+                    Append[playerHands[[currentHandIdx]], card];
+                evStale = True;
+                hand  = playerHands[[currentHandIdx]];
+                score = HandScore[hand];
+                Which[
+                    score > 21,
+                        playerStatus[[currentHandIdx]] = "bust";
+                        advanceHand[],
+                    score === 21,
+                        playerStatus[[currentHandIdx]] = "stand";
+                        advanceHand[]
+                ]
             ]
+        ];
+
+        doStand[] := If[!gameOver && currentHandStatus[] === "playing",
+            playerStatus[[currentHandIdx]] = "stand";
+            advanceHand[]
+        ];
+
+        canDoubleNow[] :=
+            !gameOver &&
+            currentHandIdx <= Length[playerHands] &&
+            currentHandStatus[] === "playing" &&
+            CanDouble[currentHand[]] &&
+            bankroll >= totalAtRisk[] + playerBets[[currentHandIdx]];
+
+        canSplitNow[] :=
+            !gameOver &&
+            currentHandIdx <= Length[playerHands] &&
+            currentHandStatus[] === "playing" &&
+            CanSplit[currentHand[]] &&
+            bankroll >= totalAtRisk[] + playerBets[[currentHandIdx]] &&
+            Length[playerHands] < 4;
+
+        doDouble[] := If[canDoubleNow[],
+            Module[{card},
+                playerBets[[currentHandIdx]] *= 2;
+                {card, deck} = DrawCard[deck];
+                playerHands[[currentHandIdx]] =
+                    Append[playerHands[[currentHandIdx]], card];
+                playerStatus[[currentHandIdx]] =
+                    If[IsBust[playerHands[[currentHandIdx]]], "bust", "stand"];
+                evStale = True;
+                advanceHand[]
+            ]
+        ];
+
+        doSplit[] := If[canSplitNow[],
+            Module[{origCards, origBet, aces, c1, c2, idx = currentHandIdx},
+                origCards = playerHands[[idx]];
+                origBet   = playerBets[[idx]];
+                aces      = (origCards[[1]]["value"] === "A");
+
+                {c1, deck} = DrawCard[deck];
+                {c2, deck} = DrawCard[deck];
+
+                (* first hand keeps the slot; gets the second drawn card *)
+                playerHands[[idx]]   = {origCards[[1]], c1};
+                fromSplit[[idx]]     = True;
+                playerStatus[[idx]]  = If[aces, "stand", "playing"];
+
+                (* insert the sister hand after it *)
+                playerHands  = Insert[playerHands,
+                                   {origCards[[2]], c2},                 idx + 1];
+                playerBets   = Insert[playerBets, origBet,                idx + 1];
+                playerStatus = Insert[playerStatus,
+                                   If[aces, "stand", "playing"],         idx + 1];
+                fromSplit    = Insert[fromSplit, True,                    idx + 1];
+
+                evStale = True;
+
+                (* split-aces rule: no more hits; advance immediately *)
+                If[aces, advanceHand[]]
+            ]
+        ];
+
+        playoutDealerAndSettle[] := Module[
+            {c, perOutcomes, totalDelta = 0., res, msg, parts},
+
+            revealDealer = True;
+            Pause[dealerPace];
+
+            If[anyHandLive[],
+                While[DealerShouldHit[dealerHand, hitSoft17],
+                    {c, deck} = DrawCard[deck];
+                    AppendTo[dealerHand, c];
+                    Pause[dealerPace];
+                ]
+            ];
+
+            perOutcomes = Table[
+                Module[{hand = playerHands[[i]], bet = playerBets[[i]],
+                        status = playerStatus[[i]], split = fromSplit[[i]],
+                        outcome, delta, isBJ},
+                    outcome = Which[
+                        status === "bust",                           "lose",
+                        IsBust[dealerHand],                          "win",
+                        HandScore[hand] > HandScore[dealerHand],     "win",
+                        HandScore[hand] === HandScore[dealerHand],   "push",
+                        True,                                        "lose"
+                    ];
+                    (* 3:2 BJ only on the original single hand *)
+                    isBJ = !split && Length[playerHands] === 1 &&
+                           Length[hand] === 2 && HandScore[hand] === 21;
+                    delta = Payout[outcome, bet, isBJ];
+                    totalDelta += delta;
+                    playerStatus[[i]] = "settled";
+                    outcome
+                ],
+                {i, Length[playerHands]}
+            ];
+
+            res = Which[totalDelta > 0, "win",
+                        totalDelta < 0, "lose",
+                        True,           "push"];
+
+            msg = If[Length[playerHands] === 1,
+                Switch[perOutcomes[[1]],
+                    "win",  If[IsBust[dealerHand], "Dealer busts! You win!", "You win!"],
+                    "lose", If[HandScore[playerHands[[1]]] > 21,
+                               "Bust! You lose!", "Dealer wins!"],
+                    "push", "Push! It's a tie!"
+                ]
+                ,
+                parts = MapIndexed[
+                    "#" <> ToString[First[#2]] <> " " <> #1 &,
+                    perOutcomes
+                ];
+                "Hands — " <> StringJoin @ Riffle[parts, ",  "]
+            ];
+
+            finishRound[res, msg, totalDelta]
         ];
 
         doReset[] := (
@@ -446,8 +591,12 @@ BlackjackGame[] :=
             shoeSize        = nDecks * 52;
             historicalCount = 0;
             deck            = CreateShoe[nDecks];
-            playerHand      = {};
+            playerHands     = {{}};
+            playerBets      = {};
+            playerStatus    = {};
+            fromSplit       = {};
             dealerHand      = {};
+            currentHandIdx  = 1;
             evStale         = True;
             startRound[];  (* deal a fresh round from the new shoe *)
         );
@@ -460,19 +609,90 @@ BlackjackGame[] :=
         (* --- EV computation ----------------------------------------------- *)
 
         recomputeEV[] := If[
-            Length[playerHand] >= 2 && Length[dealerHand] >= 1 && !gameOver,
-            Module[{unseen = unseenCards[]},
-                evHit = EstimateEV[playerHand, dealerHand[[1]], "Hit",
+            Length[currentHand[]] >= 2 && Length[dealerHand] >= 1 && !gameOver,
+            Module[{hand = currentHand[], unseen = unseenCards[]},
+                evHit = EstimateEV[hand, dealerHand[[1]], "Hit",
                                    unseen,
                                    "HitSoft17" -> hitSoft17,
                                    "Trials"    -> evTrials];
-                evStand = EstimateEV[playerHand, dealerHand[[1]], "Stand",
+                evStand = EstimateEV[hand, dealerHand[[1]], "Stand",
                                      unseen,
                                      "HitSoft17" -> hitSoft17,
                                      "Trials"    -> evTrials];
                 evStale = False;
             ]
         ];
+
+        (* --- multi-hand player display ----------------------------------- *)
+
+        handBox[idx_Integer, hand_List] :=
+            With[{
+                isCurrent = (idx === currentHandIdx) && !gameOver &&
+                            playerStatus[[idx]] === "playing",
+                status    = playerStatus[[idx]],
+                sc        = HandScore[hand]
+            },
+                Framed[
+                    Column[{
+                        Row[{
+                            Style["Hand " <> ToString[idx], White, 11],
+                            Spacer[8],
+                            Style["$" <>
+                                  ToString[NumberForm[playerBets[[idx]], {Infinity, 2}]],
+                                  $gold, 11, Bold]
+                        }],
+                        cardRow[hand],
+                        Style[
+                            Which[
+                                status === "bust", "Bust (" <> ToString[sc] <> ")",
+                                gameOver,           ToString[sc],
+                                isCurrent,          ToString[sc] <> "  \[LeftArrow]",
+                                True,               ToString[sc]
+                            ],
+                            Which[
+                                status === "bust", $loseColor,
+                                isCurrent,         $gold,
+                                True,              White
+                            ],
+                            12, Bold
+                        ]
+                    }, Alignment -> Center, Spacings -> 0.4],
+                    Background -> If[isCurrent, $feltMid, $panelBg],
+                    FrameStyle -> If[isCurrent,
+                                      Directive[$gold, Thickness[1.2]],
+                                      Directive[$feltMid, Thickness[0.8]]],
+                    RoundingRadius -> 10,
+                    FrameMargins   -> 8,
+                    ImageSize      -> {All, 165}
+                ]
+            ];
+
+        playerDisplay[] :=
+            If[Length[playerHands] === 1,
+                Framed[
+                    cardRow[playerHands[[1]]],
+                    Background     -> $panelBg,
+                    FrameStyle     -> None,
+                    RoundingRadius -> 10,
+                    FrameMargins   -> 10,
+                    ImageSize      -> {All, 110}
+                ]
+                ,
+                Row[Table[handBox[i, playerHands[[i]]],
+                          {i, Length[playerHands]}],
+                    Spacer[8]]
+            ];
+
+        playerScoreLabel[] :=
+            If[Length[playerHands] === 1,
+                labelBadge["Your Hand", HandScore[playerHands[[1]]]]
+                ,
+                labelBadge[
+                    "Your Hands (" <> ToString[currentHandIdx] <> "/" <>
+                    ToString[Length[playerHands]] <> ")",
+                    HandScore[currentHand[]]
+                ]
+            ];
 
         (* --- session plot ------------------------------------------------- *)
 
@@ -665,15 +885,8 @@ BlackjackGame[] :=
                     Spacer[{0, 12}],
 
                     (* --- Player area ------------------------------------ *)
-                    Dynamic @ labelBadge["Your Hand", HandScore[playerHand]],
-                    Framed[
-                        Dynamic @ cardRow[playerHand],
-                        Background     -> $panelBg,
-                        FrameStyle     -> None,
-                        RoundingRadius -> 10,
-                        FrameMargins   -> 10,
-                        ImageSize      -> {All, 110}
-                    ],
+                    Dynamic @ playerScoreLabel[],
+                    Dynamic @ playerDisplay[],
 
                     Spacer[{0, 8}],
 
@@ -688,28 +901,48 @@ BlackjackGame[] :=
                     Row[{
                         Button["Hit  (H)",
                             doHit[],
-                            Enabled    -> Dynamic[!gameOver],
+                            Enabled    -> Dynamic[!gameOver &&
+                                                  currentHandStatus[] === "playing"],
                             Background -> $winColor,
                             BaseStyle  -> {White, Bold, 14},
-                            ImageSize  -> {130, 40},
+                            ImageSize  -> {115, 40},
                             Method     -> "Queued"
                         ],
-                        Spacer[10],
+                        Spacer[8],
                         Button["Stand  (S)",
                             doStand[],
-                            Enabled    -> Dynamic[!gameOver],
+                            Enabled    -> Dynamic[!gameOver &&
+                                                  currentHandStatus[] === "playing"],
                             Background -> $loseColor,
                             BaseStyle  -> {White, Bold, 14},
-                            ImageSize  -> {130, 40},
+                            ImageSize  -> {115, 40},
                             Method     -> "Queued"
                         ],
-                        Spacer[10],
+                        Spacer[8],
+                        Button["Double  (D)",
+                            doDouble[],
+                            Enabled    -> Dynamic[canDoubleNow[]],
+                            Background -> RGBColor["#ff8c00"],
+                            BaseStyle  -> {White, Bold, 13},
+                            ImageSize  -> {115, 40},
+                            Method     -> "Queued"
+                        ],
+                        Spacer[8],
+                        Button["Split  (P)",
+                            doSplit[],
+                            Enabled    -> Dynamic[canSplitNow[]],
+                            Background -> RGBColor["#8a2be2"],
+                            BaseStyle  -> {White, Bold, 13},
+                            ImageSize  -> {115, 40},
+                            Method     -> "Queued"
+                        ],
+                        Spacer[8],
                         Button["Deal  (N)",
                             startRound[],
                             Enabled    -> Dynamic[gameOver && bankroll >= minBet],
                             Background -> $gold,
                             BaseStyle  -> {Black, Bold, 14},
-                            ImageSize  -> {150, 40},
+                            ImageSize  -> {130, 40},
                             Method     -> "Queued"
                         ]
                     }, Alignment -> Center],
@@ -743,8 +976,8 @@ BlackjackGame[] :=
                                 Dynamic[
                                     Row[{
                                         infoBadge["Basic strategy",
-                                            If[!gameOver && Length[playerHand] >= 2 && Length[dealerHand] >= 1,
-                                                actionLong @ BasicStrategy[playerHand, dealerHand[[1]]],
+                                            If[!gameOver && Length[currentHand[]] >= 2 && Length[dealerHand] >= 1,
+                                                actionLong @ BasicStrategy[currentHand[], dealerHand[[1]]],
                                                 "-"
                                             ]
                                         ],
@@ -769,7 +1002,7 @@ BlackjackGame[] :=
                                     Button["Estimate EV",
                                         recomputeEV[],
                                         Enabled    -> Dynamic[!gameOver &&
-                                                              Length[playerHand] >= 2 &&
+                                                              Length[currentHand[]] >= 2 &&
                                                               Length[dealerHand] >= 1],
                                         Background -> GrayLevel[0.35],
                                         BaseStyle  -> {White, Bold, 12},
@@ -867,7 +1100,9 @@ BlackjackGame[] :=
                     ToLowerCase[CurrentValue["EventKey"]],
                     "h", doHit[],
                     "s", doStand[],
-                    "n", startRound[]
+                    "d", doDouble[],
+                    "p", doSplit[],
+                    "n", If[gameOver && bankroll >= minBet, startRound[]]
                 ]
             },
             PassEventsDown -> True

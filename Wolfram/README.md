@@ -36,12 +36,22 @@ opens with the game embedded.
 ## Features
 
 ### Core gameplay
-- Hit / Stand / New Game, with keyboard shortcuts **H**, **S**, **N**
+- Hit / Stand / Double / Split / Deal, with keyboard shortcuts
+  **H**, **S**, **D**, **P**, **N**
 - Dealer-draw pacing: cards reveal one at a time after Stand
 - Configurable house rule: **S17** (dealer stands on soft 17) or **H17** (hits)
 - Multi-deck shoe: **1, 2, 4, 6, 8** decks
 - Cut-card reshuffle at adjustable penetration (50 % – 95 %)
 - Session statistics with one-click reset
+
+### Betting
+- Bankroll + per-round bet, chip buttons ($5 / $25 / $100)
+- Natural blackjack pays **3:2**, regular win 1:1, push 0, loss -bet
+- Double-down pays 2× on a single extra card
+- Split on any pair of equal-value cards (up to four resulting hands);
+  split aces receive one card each and cannot hit further; their 21 is
+  not a natural blackjack
+- "Rebuy +$1000" button appears when bankroll drops below the minimum bet
 
 ### Analytical side panels
 - **Basic strategy hint** — inline under the hands and in the Coach panel. A
@@ -112,3 +122,7 @@ ordering on two known positions.
 | **Monte-Carlo EV (Hit / Stand)**      |         |   ✓     |
 | **Hi-Lo running & true count**        |         |   ✓     |
 | **Session plot**                      |         |   ✓     |
+| **Bankroll + betting + 3:2 payout**   |         |   ✓     |
+| **Double-down**                       |         |   ✓     |
+| **Split pairs** (incl. split aces)    |         |   ✓     |
+| **Improved card graphics (pip layouts)** |      |   ✓     |
