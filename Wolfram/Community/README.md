@@ -13,7 +13,28 @@ theory, and a live, playable embed of the game.
 | `blackjack.pdf`       | PDF export of the same content (for offline review / Community preview).        |
 | `build_notebook.wls`  | Rebuilds `blackjack.nb` + `blackjack.pdf` from prose + images.                  |
 | `generate_images.wls` | Rebuilds the five PNGs in `images/` from the live package code.                 |
-| `images/`             | Figures: game overview, card showcase, dealer-bust plot, basic-strategy chart, EV heatmap. |
+| `images/`             | Figures + demo recording.                                                       |
+
+### `images/` contents
+
+| File                       | Role                                                                 |
+|----------------------------|----------------------------------------------------------------------|
+| `game_overview.png`        | Static mock-up of the UI (used for Figure 1).                        |
+| `cards_showcase.png`       | Eight rank templates + card back (Figure 2).                         |
+| `dealer_bust.png`          | Exact S17 dealer-bust probability by upcard (Figure 3).              |
+| `basic_strategy.png`       | Hit/Stand basic-strategy chart (Figure 4).                           |
+| `ev_heatmap.png`           | EV(Hit) - EV(Stand) heatmap (Figure 5).                              |
+| `blackjack_demo_frame.png` | Representative still from the screen recording (teaser in §0 and §8). |
+| `blackjack_demo.gif`       | Full animated recording, 720×846 @ 12 fps, 94 s, 7.4 MB.             |
+| `blackjack_demo.mp4`       | Same recording as H.264 (788 KB) for readers who want a smaller, higher-fidelity alternative to the GIF. |
+
+The notebook ships with the still frame visible at the top (teaser) and
+again in §8. Each still is immediately followed by a ready-to-evaluate
+`AnimatedImage[Import[...]]` cell: one click plays the full animation
+in place.
+
+The original screen-capture `.mov` is intentionally `.gitignore`d
+(~32 MB); only the compressed GIF and MP4 are tracked.
 
 ## Reading it
 

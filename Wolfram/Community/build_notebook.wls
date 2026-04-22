@@ -31,6 +31,59 @@ imgCell[name_, caption_String: ""] := Cell[
     TextAlignment  -> Center,
     CellMargins    -> {{0, 0}, {10, 14}}];
 
+(* Embed an animated GIF LAZILY. DynamicBox holds its argument, so the
+   ToBoxes+Import call is only evaluated at display time — the .nb stays
+   small. We try NotebookDirectory[] first (portable after the user saves
+   the notebook); if that fails, we fall back to the absolute build-time
+   path baked in via With, which keeps the PDF export on the build
+   machine working.                                                       *)
+animCell[name_, caption_String: ""] := With[
+    {
+        nameStr    = name,
+        captionStr = caption,
+        W          = imgWidth,
+        absImg     = FileNameJoin[{imgDir, name}]
+    },
+    Cell[
+        BoxData[
+            DynamicBox[
+                ToBoxes[
+                    Module[{path, anim},
+                        path = Quiet @ Check[
+                            With[{nbDir = NotebookDirectory[]},
+                                With[{p = FileNameJoin[{nbDir, "images", nameStr}]},
+                                    If[FileExistsQ[p], p, absImg]
+                                ]
+                            ],
+                            absImg
+                        ];
+                        anim = If[StringQ[path] && FileExistsQ[path],
+                            Pane[Import[path, "AnimatedImage"],
+                                 W, Alignment -> Center],
+                            Style[
+                                "[missing animation: " <> nameStr <> "]",
+                                Red]
+                        ];
+                        If[captionStr === "",
+                            anim,
+                            Column[{
+                                anim,
+                                Pane[
+                                    Style[captionStr, Italic,
+                                          FontSize -> 10,
+                                          FontFamily -> "Helvetica"],
+                                    W, Alignment -> Center]
+                            }, Alignment -> Center, Spacings -> 0.6]]
+                    ]
+                ]
+            ]
+        ],
+        "Output",
+        ShowCellLabel  -> False,
+        TextAlignment  -> Center,
+        CellMargins    -> {{0, 0}, {10, 14}}
+    ]];
+
 (* --- math typesetting helpers ------------------------------------- *)
 
 mathI[box_] := Cell[BoxData[FormBox[box, TraditionalForm]],
@@ -116,6 +169,18 @@ Cell["A complete casino game, a basic-strategy coach, and a \
 Monte-Carlo expected-value estimator, all in one package.", "Subtitle"],
 
 Cell["Marco Thiel", "Author"],
+
+(* ---- Teaser: representative still from the recording ---- *)
+
+imgCell["blackjack_demo_frame.png",
+    "Teaser: still from a recorded session. The full animated \
+recording is in images/blackjack_demo.gif (7.4 MB). To watch it \
+live inside the notebook, evaluate the cell below."],
+
+Cell[BoxData[
+    "AnimatedImage[Import[FileNameJoin[{NotebookDirectory[], \
+\"images\", \"blackjack_demo.gif\"}]]]"],
+    "Input", ShowCellLabel -> False],
 
 (* ---- Abstract ---- *)
 
@@ -556,6 +621,24 @@ temporary ",
 (* ---- Section 8: Play ---- *)
 
 Cell["8. Play the game", "Section"],
+
+Cell[TextData[{
+    "A still from a recorded session is shown below; the full \
+animated recording (",
+    StyleBox["images/blackjack_demo.gif", "Input"],
+    ", 7.4 MB) can be opened in any image viewer, or played inside \
+the notebook by evaluating the following cell."}],
+"Text"],
+
+imgCell["blackjack_demo_frame.png",
+    "A representative frame: adjusting the bet with the chip \
+buttons, a dealt round, and the coach / counting / session panels \
+(collapsed) below the controls."],
+
+Cell[BoxData[
+    "AnimatedImage[Import[FileNameJoin[{NotebookDirectory[], \
+\"images\", \"blackjack_demo.gif\"}]]]"],
+    "Input", ShowCellLabel -> False],
 
 Cell[TextData[{
     "The notebook loads the two packages from the parent directory \

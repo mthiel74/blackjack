@@ -1,0 +1,7 @@
+# macOS
+.DS_Store
+
+# Raw screen recordings — kept locally; the compressed GIF / MP4 under
+# Wolfram/Community/images/ are the committed versions.
+Wolfram/Screen Recording*.mov
+Wolfram/**/Screen Recording*.mov
