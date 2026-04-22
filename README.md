@@ -43,7 +43,7 @@ A classic casino card game built with pure HTML, CSS, and JavaScript. Play again
 3. Start playing!
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/blackjack.git
+git clone https://github.com/mthiel74/blackjack.git
 cd blackjack
 open index.html  # macOS
 # or
