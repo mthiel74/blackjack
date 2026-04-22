@@ -17,24 +17,45 @@ theory, and a live, playable embed of the game.
 
 ### `images/` contents
 
-| File                       | Role                                                                 |
-|----------------------------|----------------------------------------------------------------------|
-| `game_overview.png`        | Static mock-up of the UI (used for Figure 1).                        |
-| `cards_showcase.png`       | Eight rank templates + card back (Figure 2).                         |
-| `dealer_bust.png`          | Exact S17 dealer-bust probability by upcard (Figure 3).              |
-| `basic_strategy.png`       | Hit/Stand basic-strategy chart (Figure 4).                           |
-| `ev_heatmap.png`           | EV(Hit) - EV(Stand) heatmap (Figure 5).                              |
-| `blackjack_demo_frame.png` | Representative still from the screen recording (teaser in §0 and §8). |
-| `blackjack_demo.gif`       | Full animated recording, 720×846 @ 12 fps, 94 s, 7.4 MB.             |
-| `blackjack_demo.mp4`       | Same recording as H.264 (788 KB) for readers who want a smaller, higher-fidelity alternative to the GIF. |
+| File                          | Role                                                                                                   |
+|-------------------------------|--------------------------------------------------------------------------------------------------------|
+| `game_overview.png`           | Static mock-up of the UI (Figure 1).                                                                   |
+| `cards_showcase.png`          | Eight rank templates + card back (Figure 2).                                                           |
+| `dealer_bust.png`             | Exact S17 dealer-bust probability by upcard (Figure 3).                                                |
+| `basic_strategy.png`          | Hit/Stand basic-strategy chart (Figure 4).                                                             |
+| `ev_heatmap.png`              | EV(Hit) - EV(Stand) heatmap (Figure 5).                                                                |
+| `blackjack_demo_frame.png`    | Representative still from the recording, used in §8.                                                   |
+| `blackjack_demo_preview.gif`  | **Embedded in the notebook:** low-res teaser (420 × ~494, 6 fps, 40 s, 1.3 MB).                        |
+| `blackjack_demo.gif`          | **Attachment:** full recording, 720 × 846, 12 fps, 94 s, 7.4 MB.                                       |
+| `blackjack_demo.mp4`          | **Attachment:** same recording as H.264 CRF 28, 788 KB.                                                |
 
-The notebook ships with the still frame visible at the top (teaser) and
-again in §8. Each still is immediately followed by a ready-to-evaluate
-`AnimatedImage[Import[...]]` cell: one click plays the full animation
-in place.
+### GIF strategy (why two GIFs)
 
-The original screen-capture `.mov` is intentionally `.gitignore`d
-(~32 MB); only the compressed GIF and MP4 are tracked.
+The notebook needs to stay small for a Wolfram Community post. A full-
+resolution animated GIF embedded inline would 30× in size once Wolfram
+serialises the per-frame image data, ballooning the `.nb` to ~200 MB.
+
+The approach used here:
+
+- **A reduced-resolution preview** (`blackjack_demo_preview.gif`,
+  1.3 MB) is embedded *inline* inside the notebook, at the top, as the
+  teaser. It is stored as a raw `ByteArray` literal and wrapped in a
+  `DynamicBox` that decodes it into an `AnimatedImage` at display time.
+  That keeps the serialised footprint close to the raw GIF size (~1.7 MB
+  in the notebook) and plays live when the notebook is opened.
+
+- **The full-quality recording** (`blackjack_demo.gif`, 7.4 MB) and a
+  smaller H.264 version (`blackjack_demo.mp4`, 788 KB) live next to the
+  notebook as *separate files* — intended to be uploaded as
+  attachments to the Wolfram Community post so curious readers can grab
+  the full-fidelity version without inflating the notebook itself.
+
+- §8 of the notebook shows a static still frame
+  (`blackjack_demo_frame.png`) instead of a second animated copy, to
+  avoid embedding the preview bytes twice.
+
+The original screen-capture `.mov` (~32 MB) is `.gitignore`d and kept
+locally only.
 
 ## Reading it
 
